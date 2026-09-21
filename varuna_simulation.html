@@ -67,6 +67,9 @@
           <div class="bg-black/20 px-2.5 py-1 rounded-lg border border-white/15">
             <span class="text-blue-200">NISAR SAR:</span> <span class="text-emerald-300 font-bold">L+S SYNC</span>
           </div>
+          <div class="bg-black/20 px-2.5 py-1 rounded-lg border border-white/15">
+            <span class="text-blue-200">TIDE:</span> <span id="tele-tide-status" class="text-emerald-300 font-bold">2.4m OPEN</span>
+          </div>
         </div>
       </div>
 
@@ -113,7 +116,7 @@
       <div class="lg:col-span-4 flex items-center justify-end gap-2 flex-wrap">
         <span class="text-xs text-slate-400 font-mono">PRESETS:</span>
         <button class="preset-btn bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 font-semibold text-xs px-2.5 py-1.5 rounded-xl transition shadow-sm" data-preset="mumbai">
-          Mumbai Cloudburst
+          Mumbai Compound Storm
         </button>
         <button class="preset-btn bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 font-semibold text-xs px-2.5 py-1.5 rounded-xl transition shadow-sm" data-preset="wayanad">
           Wayanad Landslide
@@ -262,8 +265,8 @@
       <div class="flex justify-between items-center mb-2.5">
         <div class="flex items-center gap-2">
           <span class="w-3 h-3 rounded-full bg-blue-600 shadow-sm"></span>
-          <h2 class="font-bold text-sm tracking-wide text-slate-800">TIER 2: HYPERLOCAL URBAN NOWCASTING GRID</h2>
-          <span class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PINN &lt; 4s Inference</span>
+          <h2 class="font-bold text-sm tracking-wide text-slate-800">TIER 2: URBAN NOWCASTING &amp; TIDAL OUTFALL</h2>
+          <span class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">1D Saint-Venant &bull; 186 Outfalls</span>
         </div>
         <div class="flex items-center gap-2 font-mono text-xs">
           <span class="text-slate-500 font-semibold">Street Water:</span>
@@ -277,6 +280,9 @@
         <canvas id="canvas-urban" width="560" height="290" class="w-full h-full"></canvas>
         <div id="overlay-flood" class="hidden absolute top-3 left-3 bg-red-600 text-white border-2 border-white px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold animate-pulse shadow-xl">
           &#9888; UNDERPASS SUBMERGED (&gt; 45cm) &bull; AUTOMATED BARRICADES ACTIVE
+        </div>
+        <div id="overlay-tidal-lock" class="hidden absolute top-3 right-3 bg-cyan-700 text-white border-2 border-cyan-300 px-3 py-1 rounded-xl text-xs font-mono font-bold animate-pulse shadow-xl">
+          &#9875; ARABIAN SEA TIDAL LOCK ACTIVE (&gt;4.2m)
         </div>
       </div>
 
@@ -304,6 +310,120 @@
   </div>
 
   <!-- ========================================================= -->
+  
+  <!-- ========================================================= -->
+  <!-- MUMBAI PI-GNN URBAN RUNTIME & TIDAL LOCK COMMAND DECK -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5 mb-3.5">
+    
+    <!-- CARD 1: ARABIAN SEA TIDAL LOCK & OUTFALL SLUICE SENTINEL -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-cyan-600 shadow-sm"></span>
+          <h3 class="font-bold text-xs tracking-wide text-slate-800 uppercase">Arabian Sea Outfall &amp; Tidal Lock</h3>
+        </div>
+        <span id="badge-tidal-lock" class="text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          OPEN (GRAVITY FLOW)
+        </span>
+      </div>
+
+      <div class="space-y-2 font-mono text-xs text-slate-700">
+        <div>
+          <div class="flex justify-between text-[11px] text-slate-500 mb-0.5">
+            <span>ASTRONOMICAL TIDE LEVEL (CD):</span>
+            <span id="val-tide-height" class="text-cyan-700 font-black">2.45 m</span>
+          </div>
+          <div class="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden relative border border-slate-300">
+            <div id="bar-tide-height" class="bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 h-full transition-all duration-300" style="width: 50%;"></div>
+            <div class="absolute top-0 bottom-0 left-[84%] w-0.5 bg-red-600 z-10"></div>
+            <span class="absolute top-0.5 right-[17%] text-[8px] font-bold text-red-700 bg-white/90 px-1 rounded shadow-sm">4.2m Invert Lock</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[9px] font-bold">186 OUTFALL FLAP GATES</div>
+            <div id="val-outfall-state" class="text-emerald-700 font-bold">DISCHARGING (OPEN)</div>
+          </div>
+          <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+            <div class="text-slate-500 text-[9px] font-bold">BMC PUMP STATIONS</div>
+            <div id="val-bmc-pumps" class="text-purple-700 font-bold">12.0 m³/s ACTIVE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: 1D SAINT-VENANT PI-GNN PHYSICS RESIDUALS -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-purple-600 shadow-sm"></span>
+          <h3 class="font-bold text-xs tracking-wide text-slate-800 uppercase">1D Saint-Venant PI-GNN Runtime</h3>
+        </div>
+        <span class="text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-purple-100 text-purple-800 border border-purple-300">
+          3.8 ms (&lt;4s SWMM PINN)
+        </span>
+      </div>
+
+      <div class="space-y-2 font-mono text-xs text-slate-700">
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[11px] space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Mass Residual L_mass:</span>
+            <span id="val-pignn-mass" class="text-slate-900 font-bold">0.0012 m³/s</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Momentum Residual L_mom:</span>
+            <span id="val-pignn-mom" class="text-slate-900 font-bold">0.0038 m²/s²</span>
+          </div>
+          <div class="flex justify-between border-t border-slate-200 pt-1">
+            <span class="text-slate-500">Catchment Coupling Q_boundary(θ):</span>
+            <span id="val-pignn-boundary" class="text-blue-700 font-bold">2.4 m³/s</span>
+          </div>
+        </div>
+        <div class="text-[10px] text-slate-500 leading-tight">
+          Mithi River catchment coupling: CRNS saturation θ continuously drives upstream boundary influx into municipal sewer graph.
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: FLOOD-AWARE GRAPHHOPPER ROUTING ENGINE -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></span>
+          <h3 class="font-bold text-xs tracking-wide text-slate-800 uppercase">GraphHopper Fleet Routing P(d)</h3>
+        </div>
+        <span id="badge-route-status" class="text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          PASSABLE
+        </span>
+      </div>
+
+      <div class="space-y-2 font-mono text-xs text-slate-700">
+        <div class="text-[11px] flex justify-between text-slate-600">
+          <span>CORRIDOR:</span>
+          <span class="font-bold text-slate-900">BKC ➔ Airport (CSMI) (8.4 km)</span>
+        </div>
+
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200 space-y-1 text-[11px]">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Transit Travel Time:</span>
+            <span id="val-route-eta" class="text-emerald-700 font-black">14.0 mins (Normal)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Dynamic Edge Penalty P(d):</span>
+            <span id="val-route-penalty" class="text-slate-700 font-bold">+0s (0 km/h delay)</span>
+          </div>
+        </div>
+
+        <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+          <div id="bar-route-status" class="bg-emerald-500 h-full transition-all duration-300" style="width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- MULTI-TRACK SYNCHRONIZED TIME-SERIES TELEMETRY PLOT -->
   <!-- ========================================================= -->
   <div class="bg-white border border-slate-200/90 rounded-2xl p-4 mb-3.5 shadow-md">
@@ -311,6 +431,7 @@
       <div class="flex items-center gap-4 flex-wrap">
         <span class="font-bold text-slate-700 uppercase tracking-wider">Synchronized 36-Hour Telemetry Tracks:</span>
         <span class="flex items-center gap-1.5 text-sky-700 font-bold"><span class="w-3 h-3 rounded bg-sky-500"></span> Rain (mm/h)</span>
+        <span class="flex items-center gap-1.5 text-cyan-700 font-bold"><span class="w-3 h-1.5 bg-cyan-500"></span> Tide (m)</span>
         <span class="flex items-center gap-1.5 text-amber-700 font-bold"><span class="w-3 h-1.5 bg-amber-500"></span> CRNS &theta;</span>
         <span class="flex items-center gap-1.5 text-emerald-700 font-bold"><span class="w-3 h-1.5 bg-emerald-500"></span> Slope FS</span>
         <span class="flex items-center gap-1.5 text-blue-700 font-bold"><span class="w-3 h-1.5 bg-blue-600"></span> Catchment Q</span>
@@ -472,8 +593,26 @@
     const overlayFlood = document.getElementById('overlay-flood');
     const valRain = document.getElementById('val-rain');
     const valQInflow = document.getElementById('val-qinflow');
-    const valPipeManning = document.getElementById('val-pipe-manning');
+    const valDrainCap = document.getElementById('val-pipe-manning');
     const valManhole = document.getElementById('val-manhole');
+
+    // Mumbai PI-GNN & Tidal Lock Elements
+    const teleTideStatus = document.getElementById('tele-tide-status');
+    const overlayTidalLock = document.getElementById('overlay-tidal-lock');
+    const badgeTidalLock = document.getElementById('badge-tidal-lock');
+    const valTideHeight = document.getElementById('val-tide-height');
+    const barTideHeight = document.getElementById('bar-tide-height');
+    const valOutfallState = document.getElementById('val-outfall-state');
+    const valBmcPumps = document.getElementById('val-bmc-pumps');
+
+    const valPignnMass = document.getElementById('val-pignn-mass');
+    const valPignnMom = document.getElementById('val-pignn-mom');
+    const valPignnBoundary = document.getElementById('val-pignn-boundary');
+
+    const badgeRouteStatus = document.getElementById('badge-route-status');
+    const valRouteEta = document.getElementById('val-route-eta');
+    const valRoutePenalty = document.getElementById('val-route-penalty');
+    const barRouteStatus = document.getElementById('bar-route-status');
 
     const teleFlux = document.getElementById('tele-flux');
     const logContainer = document.getElementById('log-container');
@@ -551,23 +690,67 @@
         const surfaceRunoffMm = Math.max(0.0, rain - actualInfiltrationRate);
         const upstreamCatchmentQ = 2.0 + (surfaceRunoffMm * 24.0 * Math.pow(sr, 2)) / 3.6;
 
-        // 5. Urban Pipe Inflow & Surcharge
+        // 5. Dynamic Arabian Sea Semi-Diurnal Tide (Period = 12.42h, MSL = 2.5m, Amp = 2.25m)
+        const tideHeight = 2.5 + 2.25 * Math.sin((2 * Math.PI * (t + 1.2)) / 12.42);
+        const outfallInvert = 4.2;
+        const isTidalLocked = tideHeight >= outfallInvert;
+        const bmcPumpCapacity = 12.0; // m3/s mechanical pump stations
+
+        // Available Outfall Drainage Capacity:
+        let activeDrainageCap = bmcPumpCapacity;
+        let headMultiplier = 0.0;
+        if (!isTidalLocked) {
+          const headDiff = outfallInvert - tideHeight;
+          headMultiplier = Math.min(1.0, Math.max(0.2, headDiff / 1.5));
+          activeDrainageCap = (pipeQCap * headMultiplier) + bmcPumpCapacity;
+        }
+
+        // 6. Urban Pipe Inflow & Surcharge
         const urbanDirectQ = (rain * 0.72 * 14.0) / 3.6;
         const totalInflowQ = urbanDirectQ + (upstreamCatchmentQ * 0.45);
-        const manholeSurchargeQ = Math.max(0.0, totalInflowQ - pipeQCap);
+        const manholeSurchargeQ = Math.max(0.0, totalInflowQ - activeDrainageCap);
 
-        // 6. Street Ponding Depth (cm)
+        // 7. Street Ponding Depth (cm)
         if (manholeSurchargeQ > 0) {
           cumStreetPonding += (manholeSurchargeQ * 0.16);
         } else {
           cumStreetPonding = Math.max(0.0, cumStreetPonding - 0.35);
         }
 
+        // 8. 1D Saint-Venant PI-GNN PDE Residuals
+        const pignnMassRes = Math.abs(manholeSurchargeQ * 0.0035 + 0.0008);
+        const pignnMomRes = Math.abs(totalInflowQ * 0.0022 + 0.0014);
+
+        // 9. GraphHopper Fleet Routing Edge Penalty P(d)
+        let routePenaltySec = 0;
+        let routeEtaMin = 14.0;
+        let routeSpeedKmh = 45;
+        let routeStateStr = "PASSABLE";
+        if (cumStreetPonding < 5.0) {
+          routeStateStr = "PASSABLE";
+          routePenaltySec = 0;
+          routeEtaMin = 14.0;
+          routeSpeedKmh = 45;
+        } else if (cumStreetPonding < 15.0) {
+          routeStateStr = "CAUTION";
+          routePenaltySec = Math.round(120 * 0.4 * (cumStreetPonding - 5.0) * 1.5);
+          routeEtaMin = 14.0 + (routePenaltySec / 60.0);
+          routeSpeedKmh = Math.max(8, Math.round(45 - (cumStreetPonding - 5.0) * 3.5));
+        } else {
+          routeStateStr = "SEVERED";
+          routePenaltySec = 9999;
+          routeEtaMin = 36.5; // Diverted via Eastern Express Highway
+          routeSpeedKmh = 0;
+        }
+
         timelineData.push({
           t, rain, theta: thetaCurrent, wettingDepthM, fs, poreWaterU,
           tauResisting, tauDriving, sigmaTotal, sigmaEff,
-          upstreamCatchmentQ, totalInflowQ, pipeQCap,
-          manholeSurchargeQ, streetDepth: cumStreetPonding
+          upstreamCatchmentQ, totalInflowQ, pipeQCap, activeDrainageCap,
+          manholeSurchargeQ, streetDepth: cumStreetPonding,
+          tideHeight, isTidalLocked,
+          pignnMassRes, pignnMomRes,
+          routeStateStr, routePenaltySec, routeEtaMin, routeSpeedKmh
         });
       }
       renderChart();
@@ -819,7 +1002,7 @@
     }
 
     // =========================================================
-    // CANVAS 2: URBAN NOWCAST & MANNING PIPE SURCHARGE (BRIGHT)
+    // CANVAS 2: URBAN NOWCAST & ARABIAN SEA OUTFALL (BRIGHT)
     // =========================================================
     function renderUrban(state) {
       ctxUrban.clearRect(0, 0, 560, 290);
@@ -850,151 +1033,270 @@
         ctxUrban.stroke();
       }
 
-      // City Skyline (Vibrant Blue/Slate Architecture)
+      // City Skyline (Left & Center)
       ctxUrban.fillStyle = '#64748b';
-      ctxUrban.fillRect(40, 45, 55, 95);
-      ctxUrban.fillRect(115, 65, 45, 75);
-      ctxUrban.fillRect(380, 50, 60, 90);
-      ctxUrban.fillRect(460, 35, 75, 105);
+      ctxUrban.fillRect(35, 45, 50, 95);
+      ctxUrban.fillRect(100, 65, 40, 75);
+      ctxUrban.fillRect(315, 50, 50, 90);
 
-      // Building Windows (Bright Yellow/Cyan)
+      // Building Windows
       ctxUrban.fillStyle = '#fef08a';
       for (let by = 55; by < 130; by += 15) {
-        ctxUrban.fillRect(48, by, 8, 8);
-        ctxUrban.fillRect(65, by, 8, 8);
+        ctxUrban.fillRect(42, by, 7, 7);
+        ctxUrban.fillRect(58, by, 7, 7);
       }
 
       // Street & Underpass Topography
       ctxUrban.fillStyle = '#475569';
       ctxUrban.beginPath();
       ctxUrban.moveTo(0, 145);
-      ctxUrban.lineTo(150, 145);
-      ctxUrban.lineTo(240, 172);
-      ctxUrban.lineTo(340, 172);
-      ctxUrban.lineTo(430, 145);
-      ctxUrban.lineTo(560, 145);
-      ctxUrban.lineTo(560, 290);
+      ctxUrban.lineTo(130, 145);
+      ctxUrban.lineTo(200, 172);
+      ctxUrban.lineTo(310, 172);
+      ctxUrban.lineTo(380, 145);
+      ctxUrban.lineTo(445, 145);
+      ctxUrban.lineTo(445, 290);
       ctxUrban.lineTo(0, 290);
       ctxUrban.closePath();
       ctxUrban.fill();
 
-      // Road Tarmac Lines (Bright Yellow)
+      // Road Tarmac Lines
       ctxUrban.strokeStyle = '#fbbf24';
       ctxUrban.lineWidth = 2.5;
       ctxUrban.setLineDash([10, 8]);
       ctxUrban.beginPath();
       ctxUrban.moveTo(0, 147);
-      ctxUrban.lineTo(150, 147);
-      ctxUrban.lineTo(240, 174);
-      ctxUrban.lineTo(340, 174);
-      ctxUrban.lineTo(430, 147);
-      ctxUrban.lineTo(560, 147);
+      ctxUrban.lineTo(130, 147);
+      ctxUrban.lineTo(200, 174);
+      ctxUrban.lineTo(310, 174);
+      ctxUrban.lineTo(380, 147);
+      ctxUrban.lineTo(445, 147);
       ctxUrban.stroke();
       ctxUrban.setLineDash([]);
 
-      // Underground Concrete Conduit
+      // =========================================================
+      // RIGHT: ARABIAN SEA TIDAL BASIN & SEAWALL (x: 445 to 560)
+      // =========================================================
+      // Concrete Seawall
       ctxUrban.fillStyle = '#334155';
-      ctxUrban.fillRect(50, 220, 460, 54);
+      ctxUrban.fillRect(445, 125, 16, 165);
+      ctxUrban.strokeStyle = '#1e293b';
+      ctxUrban.lineWidth = 2;
+      ctxUrban.strokeRect(445, 125, 16, 165);
+
+      // Arabian Sea Basin
+      ctxUrban.fillStyle = '#e0f2fe';
+      ctxUrban.fillRect(461, 140, 99, 150);
+
+      // Sea Water Level
+      const seaWaterY = 275 - ((state.tideHeight / 5.2) * 95);
+      const seaGrad = ctxUrban.createLinearGradient(461, seaWaterY, 461, 290);
+      seaGrad.addColorStop(0, '#0284c7');
+      seaGrad.addColorStop(1, '#0c4a6e');
+      ctxUrban.fillStyle = seaGrad;
+      ctxUrban.fillRect(461, seaWaterY, 99, 290 - seaWaterY);
+
+      // Sea Waves Rippling
+      ctxUrban.strokeStyle = '#bae6fd';
+      ctxUrban.lineWidth = 1.5;
+      ctxUrban.beginPath();
+      ctxUrban.moveTo(461, seaWaterY);
+      for (let sx = 461; sx <= 560; sx += 15) {
+        ctxUrban.quadraticCurveTo(sx + 7, seaWaterY - 3, sx + 15, seaWaterY);
+      }
+      ctxUrban.stroke();
+
+      // Sea Basin Label
+      ctxUrban.fillStyle = '#ffffff';
+      ctxUrban.font = 'bold 9px monospace';
+      ctxUrban.fillText('ARABIAN SEA', 472, 282);
+      ctxUrban.fillStyle = '#bae6fd';
+      ctxUrban.font = 'bold 8px monospace';
+      ctxUrban.fillText(`${state.tideHeight.toFixed(2)}m CD`, 478, seaWaterY - 6);
+
+      // BMC Dewatering Pump Station on Top of Seawall
+      ctxUrban.fillStyle = '#6b21a8';
+      ctxUrban.fillRect(435, 110, 26, 35);
+      ctxUrban.strokeStyle = '#a855f7';
+      ctxUrban.lineWidth = 1.5;
+      ctxUrban.strokeRect(435, 110, 26, 35);
+      ctxUrban.fillStyle = '#ffffff';
+      ctxUrban.font = 'bold 8px monospace';
+      ctxUrban.fillText('BMC', 438, 124);
+
+      // BMC High-Pressure Discharge Pipe into Sea
+      ctxUrban.strokeStyle = '#9333ea';
+      ctxUrban.lineWidth = 3.5;
+      ctxUrban.beginPath();
+      ctxUrban.moveTo(450, 115);
+      ctxUrban.lineTo(475, 115);
+      ctxUrban.lineTo(485, 135);
+      ctxUrban.stroke();
+
+      // Pump Discharge Jet Water Stream
+      ctxUrban.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+      ctxUrban.lineWidth = 3;
+      ctxUrban.beginPath();
+      ctxUrban.moveTo(485, 135);
+      ctxUrban.quadraticCurveTo(495, 145, 492, seaWaterY);
+      ctxUrban.stroke();
+
+      // =========================================================
+      // UNDERGROUND CONDUIT & 186 OUTFALL FLAP GATE
+      // =========================================================
+      ctxUrban.fillStyle = '#334155';
+      ctxUrban.fillRect(40, 220, 405, 54);
       ctxUrban.strokeStyle = '#64748b';
       ctxUrban.lineWidth = 3;
-      ctxUrban.strokeRect(50, 220, 460, 54);
+      ctxUrban.strokeRect(40, 220, 405, 54);
+
+      // Flowing Blue Water inside Conduit
+      const pipeFillRatio = Math.min(1.0, state.totalInflowQ / state.basePipeQCap);
+      const pipeWaterHeight = pipeFillRatio * 52;
+      ctxUrban.fillStyle = '#0284c7';
+      ctxUrban.fillRect(42, 272 - pipeWaterHeight, 401, pipeWaterHeight);
 
       // Vertical Manhole Shaft Riser
       ctxUrban.fillStyle = '#334155';
-      ctxUrban.fillRect(275, 172, 50, 50);
-      ctxUrban.strokeRect(275, 172, 50, 50);
-
-      // Flowing Blue Water inside Stormwater Conduit
-      const pipeFillRatio = Math.min(1.0, state.totalInflowQ / state.pipeQCap);
-      const pipeWaterHeight = pipeFillRatio * 52;
-      ctxUrban.fillStyle = '#0284c7';
-      ctxUrban.fillRect(52, 272 - pipeWaterHeight, 456, pipeWaterHeight);
+      ctxUrban.fillRect(235, 172, 45, 50);
+      ctxUrban.strokeRect(235, 172, 45, 50);
 
       // Manhole Lid & Surcharge Jet Fountain
       if (state.manholeSurchargeQ > 0) {
-        // Blown off lid
         ctxUrban.fillStyle = '#94a3b8';
         ctxUrban.save();
-        ctxUrban.translate(295, 160);
+        ctxUrban.translate(255, 160);
         ctxUrban.rotate(-0.4);
-        ctxUrban.fillRect(-22, -4, 44, 8);
+        ctxUrban.fillRect(-20, -4, 40, 8);
         ctxUrban.restore();
 
-        // High-Velocity Surcharge Fountain Geyser (Bright Blue)
         const jetHeight = Math.min(45, state.manholeSurchargeQ * 2.1);
         ctxUrban.fillStyle = 'rgba(2, 132, 199, 0.85)';
         ctxUrban.beginPath();
-        ctxUrban.ellipse(300, 172 - jetHeight / 2, 18, jetHeight / 2, 0, 0, Math.PI * 2);
+        ctxUrban.ellipse(257, 172 - jetHeight / 2, 16, jetHeight / 2, 0, 0, Math.PI * 2);
         ctxUrban.fill();
       } else {
-        // Closed manhole lid
         ctxUrban.fillStyle = '#94a3b8';
-        ctxUrban.fillRect(273, 169, 54, 6);
+        ctxUrban.fillRect(233, 169, 49, 6);
       }
+
+      // Sluice Flap Gate at Outfall Mouth (x: 445, y: 220 to 274)
+      ctxUrban.save();
+      if (state.isTidalLocked) {
+        // Gate is SLAMMED SHUT vertically against seawall
+        ctxUrban.strokeStyle = '#dc2626';
+        ctxUrban.lineWidth = 6;
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(445, 220);
+        ctxUrban.lineTo(445, 274);
+        ctxUrban.stroke();
+
+        // Hinge
+        ctxUrban.fillStyle = '#ef4444';
+        ctxUrban.beginPath();
+        ctxUrban.arc(445, 220, 5, 0, Math.PI * 2);
+        ctxUrban.fill();
+
+        // Status Badge
+        ctxUrban.fillStyle = '#dc2626';
+        ctxUrban.fillRect(385, 205, 55, 12);
+        ctxUrban.fillStyle = '#ffffff';
+        ctxUrban.font = 'bold 8px monospace';
+        ctxUrban.fillText('LOCKED', 393, 214);
+      } else {
+        // Gate is SWUNG OPEN at an angle towards the sea
+        ctxUrban.strokeStyle = '#16a34a';
+        ctxUrban.lineWidth = 5;
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(445, 220);
+        ctxUrban.lineTo(468, 255);
+        ctxUrban.stroke();
+
+        // Hinge
+        ctxUrban.fillStyle = '#22c55e';
+        ctxUrban.beginPath();
+        ctxUrban.arc(445, 220, 5, 0, Math.PI * 2);
+        ctxUrban.fill();
+
+        // Discharging Water plume into sea
+        ctxUrban.fillStyle = 'rgba(56, 189, 248, 0.8)';
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(445, 250);
+        ctxUrban.lineTo(485, 260);
+        ctxUrban.lineTo(480, 275);
+        ctxUrban.lineTo(445, 272);
+        ctxUrban.closePath();
+        ctxUrban.fill();
+
+        // Status Badge
+        ctxUrban.fillStyle = '#16a34a';
+        ctxUrban.fillRect(385, 205, 55, 12);
+        ctxUrban.fillStyle = '#ffffff';
+        ctxUrban.font = 'bold 8px monospace';
+        ctxUrban.fillText('OPEN', 400, 214);
+      }
+      ctxUrban.restore();
 
       // Street Water Inundation in Underpass
       const pondingPx = Math.min(48, state.streetDepth * 0.72);
       if (pondingPx > 0.5) {
         ctxUrban.fillStyle = 'rgba(2, 132, 199, 0.75)';
         ctxUrban.beginPath();
-        ctxUrban.moveTo(170, 172);
-        ctxUrban.lineTo(410, 172);
-        ctxUrban.lineTo(410, 172 - pondingPx);
-        ctxUrban.lineTo(170, 172 - pondingPx);
+        ctxUrban.moveTo(140, 172);
+        ctxUrban.lineTo(370, 172);
+        ctxUrban.lineTo(370, 172 - pondingPx);
+        ctxUrban.lineTo(140, 172 - pondingPx);
         ctxUrban.closePath();
         ctxUrban.fill();
 
-        // Wave surface ripple (White/Cyan)
+        // Wave ripples
         ctxUrban.strokeStyle = '#bae6fd';
         ctxUrban.lineWidth = 2;
         ctxUrban.beginPath();
-        ctxUrban.moveTo(170, 172 - pondingPx);
-        for (let wx = 170; wx <= 410; wx += 20) {
+        ctxUrban.moveTo(140, 172 - pondingPx);
+        for (let wx = 140; wx <= 370; wx += 20) {
           ctxUrban.quadraticCurveTo(wx + 10, 172 - pondingPx - 2, wx + 20, 172 - pondingPx);
         }
         ctxUrban.stroke();
       }
 
-      // Vehicle on Road (Vibrant Red Sports Car)
-      const carX = 220;
+      // Vehicle on Road
+      const carX = 175;
       const carY = 160;
-      ctxUrban.fillStyle = '#ef4444';
-      ctxUrban.fillRect(carX, carY, 34, 12);
-      ctxUrban.fillRect(carX + 6, carY - 8, 20, 8);
+      ctxUrban.fillStyle = state.streetDepth >= 15.0 ? '#dc2626' : (state.streetDepth >= 5.0 ? '#f59e0b' : '#3b82f6');
+      ctxUrban.fillRect(carX, carY, 32, 12);
+      ctxUrban.fillRect(carX + 6, carY - 7, 18, 7);
       ctxUrban.fillStyle = '#0f172a';
       ctxUrban.beginPath();
-      ctxUrban.arc(carX + 8, carY + 12, 4, 0, Math.PI * 2);
-      ctxUrban.arc(carX + 26, carY + 12, 4, 0, Math.PI * 2);
+      ctxUrban.arc(carX + 7, carY + 12, 4, 0, Math.PI * 2);
+      ctxUrban.arc(carX + 25, carY + 12, 4, 0, Math.PI * 2);
       ctxUrban.fill();
 
       // Automated Hydraulic Barricade
       if (state.streetDepth > 20) {
-        // Red Barrier Dropped
         ctxUrban.strokeStyle = '#dc2626';
         ctxUrban.lineWidth = 4;
         ctxUrban.beginPath();
-        ctxUrban.moveTo(140, 145);
-        ctxUrban.lineTo(140, 118);
+        ctxUrban.moveTo(125, 145);
+        ctxUrban.lineTo(125, 118);
         ctxUrban.stroke();
         ctxUrban.fillStyle = '#dc2626';
-        ctxUrban.fillRect(140, 124, 80, 5);
+        ctxUrban.fillRect(125, 124, 75, 5);
         ctxUrban.fillStyle = '#ffffff';
-        ctxUrban.fillRect(155, 124, 12, 5);
-        ctxUrban.fillRect(185, 124, 12, 5);
+        ctxUrban.fillRect(140, 124, 12, 5);
+        ctxUrban.fillRect(170, 124, 12, 5);
 
-        // Flashing Light
         const flash = (Date.now() % 600) < 300;
         ctxUrban.fillStyle = flash ? '#ef4444' : '#f87171';
         ctxUrban.beginPath();
-        ctxUrban.arc(140, 115, 5, 0, Math.PI * 2);
+        ctxUrban.arc(125, 115, 5, 0, Math.PI * 2);
         ctxUrban.fill();
       } else {
-        // Green Barrier Open
         ctxUrban.strokeStyle = '#16a34a';
         ctxUrban.lineWidth = 4;
         ctxUrban.beginPath();
-        ctxUrban.moveTo(140, 145);
-        ctxUrban.lineTo(140, 105);
+        ctxUrban.moveTo(125, 145);
+        ctxUrban.lineTo(125, 105);
         ctxUrban.stroke();
       }
     }
@@ -1046,7 +1348,33 @@
         ctxChart.fillRect(x, h - padBottom - barH, 4, barH);
       }
 
-      // Track 2: CRNS Soil Moisture theta (Vibrant Amber)
+      // Track 2: Astronomical Tide (Cyan line)
+      ctxChart.strokeStyle = '#06b6d4';
+      ctxChart.lineWidth = 2;
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - (d.tideHeight / 5.2) * plotH;
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Outfall Invert 4.2m Lock Threshold Line (Red dashed)
+      const yInvert = h - padBottom - (4.2 / 5.2) * plotH;
+      ctxChart.strokeStyle = '#ef4444';
+      ctxChart.lineWidth = 1.5;
+      ctxChart.setLineDash([4, 4]);
+      ctxChart.beginPath();
+      ctxChart.moveTo(padLeft, yInvert);
+      ctxChart.lineTo(w - padRight, yInvert);
+      ctxChart.stroke();
+      ctxChart.setLineDash([]);
+      ctxChart.fillStyle = '#dc2626';
+      ctxChart.font = 'bold 9px monospace';
+      ctxChart.fillText('4.2m OUTFALL INVERT (TIDAL LOCK)', w - padRight - 220, yInvert - 3);
+
+      // Track 3: CRNS Soil Moisture theta (Vibrant Amber)
       ctxChart.strokeStyle = '#f59e0b';
       ctxChart.lineWidth = 2.5;
       ctxChart.beginPath();
@@ -1166,9 +1494,64 @@
       // Urban Readouts
       valRain.innerText = `${state.rain.toFixed(1)} mm/h`;
       valQInflow.innerText = `${state.totalInflowQ.toFixed(1)} m³/s`;
-      valPipeManning.innerText = `${Math.min(state.pipeQCap, state.totalInflowQ).toFixed(1)} m³/s`;
+      valDrainCap.innerText = `${state.activeDrainageCap.toFixed(1)} m³/s`;
       valManhole.innerText = `${state.manholeSurchargeQ.toFixed(1)} m³/s`;
       valDepth.innerText = `${state.streetDepth.toFixed(1)} cm`;
+
+      // Arabian Sea & Tidal Lock Updates
+      valTideHeight.innerText = `${state.tideHeight.toFixed(2)} m`;
+      const tidePercent = Math.min(100, Math.max(0, (state.tideHeight / 5.2) * 100));
+      barTideHeight.style.width = `${tidePercent}%`;
+
+      if (state.isTidalLocked) {
+        overlayTidalLock.classList.remove('hidden');
+        teleTideStatus.innerText = `${state.tideHeight.toFixed(1)}m LOCKED`;
+        teleTideStatus.className = 'text-red-400 font-bold';
+        badgeTidalLock.innerText = 'LOCKED (GATES SEALED)';
+        badgeTidalLock.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-red-100 text-red-800 border border-red-300';
+        valOutfallState.innerText = 'SEALED (>4.2m)';
+        valOutfallState.className = 'text-red-700 font-bold';
+      } else {
+        overlayTidalLock.classList.add('hidden');
+        teleTideStatus.innerText = `${state.tideHeight.toFixed(1)}m OPEN`;
+        teleTideStatus.className = 'text-emerald-300 font-bold';
+        badgeTidalLock.innerText = 'OPEN (GRAVITY FLOW)';
+        badgeTidalLock.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+        valOutfallState.innerText = 'GRAVITY DISCHARGING';
+        valOutfallState.className = 'text-emerald-700 font-bold';
+      }
+
+      // PI-GNN Residuals
+      valPignnMass.innerText = `${state.pignnMassRes.toFixed(4)} m³/s`;
+      valPignnMom.innerText = `${state.pignnMomRes.toFixed(4)} m²/s²`;
+      valPignnBoundary.innerText = `${state.upstreamCatchmentQ.toFixed(1)} m³/s`;
+
+      // GraphHopper Fleet Routing
+      if (state.routeStateStr === 'PASSABLE') {
+        badgeRouteStatus.innerText = 'PASSABLE (45 km/h)';
+        badgeRouteStatus.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+        valRouteEta.innerText = '14.0 mins (Normal)';
+        valRouteEta.className = 'text-emerald-700 font-black';
+        valRoutePenalty.innerText = '+0s (No delay)';
+        barRouteStatus.style.width = '100%';
+        barRouteStatus.className = 'bg-emerald-500 h-full transition-all duration-300';
+      } else if (state.routeStateStr === 'CAUTION') {
+        badgeRouteStatus.innerText = `CONGESTION (${state.routeSpeedKmh} km/h)`;
+        badgeRouteStatus.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-amber-100 text-amber-800 border border-amber-300';
+        valRouteEta.innerText = `${state.routeEtaMin.toFixed(1)} mins`;
+        valRouteEta.className = 'text-amber-700 font-black';
+        valRoutePenalty.innerText = `+${state.routePenaltySec}s (${state.routeSpeedKmh} km/h crawl)`;
+        barRouteStatus.style.width = '60%';
+        barRouteStatus.className = 'bg-amber-500 h-full transition-all duration-300';
+      } else {
+        badgeRouteStatus.innerText = 'SEVERED (TOTAL REROUTE)';
+        badgeRouteStatus.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-red-100 text-red-800 border border-red-300 animate-pulse';
+        valRouteEta.innerText = '36.5 mins (Diverted via EEH)';
+        valRouteEta.className = 'text-red-700 font-black';
+        valRoutePenalty.innerText = 'EDGE IMPASSABLE (P(d) = ∞)';
+        barRouteStatus.style.width = '20%';
+        barRouteStatus.className = 'bg-red-600 h-full transition-all duration-300';
+      }
 
       if (state.streetDepth > 45.0) {
         valDepth.className = 'text-red-600 font-black text-base animate-pulse';
@@ -1293,9 +1676,9 @@
     // CSV TELEMETRY EXPORT
     // =========================================================
     document.getElementById('btn-export').addEventListener('click', () => {
-      let csv = "Time_h,Rain_mm_h,CRNS_theta,WettingFront_m,Slope_FS,PorePressure_kPa,TotalInflow_m3_s,StreetDepth_cm\n";
+      let csv = "Time_h,Rain_mm_h,CRNS_theta,WettingFront_m,Slope_FS,PorePressure_kPa,Tide_m,Tidal_Lock,TotalInflow_m3_s,DrainCapacity_m3_s,StreetDepth_cm,Route_Status,Route_Delay_s\n";
       for (const d of timelineData) {
-        csv += `${d.t.toFixed(1)},${d.rain.toFixed(1)},${d.theta.toFixed(3)},${d.wettingDepthM.toFixed(2)},${d.fs.toFixed(2)},${d.poreWaterU.toFixed(1)},${d.totalInflowQ.toFixed(1)},${d.streetDepth.toFixed(1)}\n`;
+        csv += `${d.t.toFixed(1)},${d.rain.toFixed(1)},${d.theta.toFixed(3)},${d.wettingDepthM.toFixed(2)},${d.fs.toFixed(2)},${d.poreWaterU.toFixed(1)},${d.tideHeight.toFixed(2)},${d.isTidalLocked ? 1 : 0},${d.totalInflowQ.toFixed(1)},${d.activeDrainageCap.toFixed(1)},${d.streetDepth.toFixed(1)},${d.routeStateStr},${d.routePenaltySec}\n`;
       }
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);

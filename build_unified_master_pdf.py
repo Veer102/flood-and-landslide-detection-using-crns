@@ -81,8 +81,8 @@ def build_pdf(filename: str):
     style_cover_title = ParagraphStyle(
         'CoverTitle',
         fontName='Helvetica-Bold',
-        fontSize=23,
-        leading=28,
+        fontSize=22,
+        leading=27,
         textColor=c_primary,
         alignment=TA_LEFT,
         spaceAfter=10
@@ -91,11 +91,11 @@ def build_pdf(filename: str):
     style_cover_subtitle = ParagraphStyle(
         'CoverSubtitle',
         fontName='Helvetica',
-        fontSize=11.5,
-        leading=16,
+        fontSize=11,
+        leading=15.5,
         textColor=c_secondary,
         alignment=TA_LEFT,
-        spaceAfter=20
+        spaceAfter=18
     )
     
     style_cover_meta = ParagraphStyle(
@@ -110,51 +110,51 @@ def build_pdf(filename: str):
     style_h1 = ParagraphStyle(
         'Header1',
         fontName='Helvetica-Bold',
-        fontSize=14,
-        leading=18,
+        fontSize=13,
+        leading=17,
         textColor=c_primary,
-        spaceBefore=14,
-        spaceAfter=6,
+        spaceBefore=12,
+        spaceAfter=5,
         keepWithNext=True
     )
     
     style_h2 = ParagraphStyle(
         'Header2',
         fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=15,
+        fontSize=10.5,
+        leading=14.5,
         textColor=c_secondary,
-        spaceBefore=10,
-        spaceAfter=4,
+        spaceBefore=9,
+        spaceAfter=3,
         keepWithNext=True
     )
     
     style_body = ParagraphStyle(
         'BodyDark',
         fontName='Helvetica',
-        fontSize=9,
-        leading=13.5,
+        fontSize=8.5,
+        leading=12.5,
         textColor=c_text,
         alignment=TA_JUSTIFY,
-        spaceAfter=5
+        spaceAfter=4
     )
     
     style_bullet = ParagraphStyle(
         'BulletText',
         fontName='Helvetica',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12.5,
         textColor=c_text,
         leftIndent=15,
         firstLineIndent=-10,
-        spaceAfter=3
+        spaceAfter=2.5
     )
     
     style_callout = ParagraphStyle(
         'CalloutText',
         fontName='Helvetica-Oblique',
-        fontSize=8.5,
-        leading=13,
+        fontSize=8,
+        leading=12,
         textColor=colors.HexColor("#1A202C")
     )
     
@@ -162,7 +162,7 @@ def build_pdf(filename: str):
         'TableHeader',
         fontName='Helvetica-Bold',
         fontSize=8,
-        leading=10.5,
+        leading=10,
         textColor=colors.white,
         alignment=TA_CENTER
     )
@@ -176,67 +176,61 @@ def build_pdf(filename: str):
         alignment=TA_LEFT
     )
 
-    style_table_cell_center = ParagraphStyle(
-        'TableCellCenter',
-        fontName='Helvetica',
-        fontSize=7.5,
-        leading=10,
-        textColor=c_text,
-        alignment=TA_CENTER
-    )
-
     story = []
 
     # =========================================================
     # COVER PAGE
     # =========================================================
-    story.append(Spacer(1, 25))
-    story.append(HRFlowable(width="100%", thickness=6, color=c_primary, spaceBefore=0, spaceAfter=15))
-    story.append(Paragraph("e-YANTRA INNOVATION CHALLENGE (eYIC) & MoES SMART GOVERNANCE MASTER BLUEPRINT", ParagraphStyle('PreTitle', fontName='Helvetica-Bold', fontSize=9, leading=11, textColor=c_warning, spaceAfter=6)))
+    story.append(Spacer(1, 15))
+    story.append(HRFlowable(width="100%", thickness=6, color=c_primary, spaceBefore=0, spaceAfter=12))
+    story.append(Paragraph("e-YANTRA INNOVATION CHALLENGE (eYIC) & MoES SMART GOVERNANCE MASTER BLUEPRINT", ParagraphStyle('PreTitle', fontName='Helvetica-Bold', fontSize=8.5, leading=11, textColor=c_warning, spaceAfter=5)))
     story.append(Paragraph("PROJECT VARUNA-NET 2.0:<br/>The Unified Ground–Space–Edge AI Fusion Grid", style_cover_title))
-    story.append(Paragraph("A Three-Tier Disaster Resilience Architecture Integrating Hillslope Landslide Factor of Safety, Macro-Catchment Inundation Sentinel, and Hyperlocal Urban Drainage Nowcasting", style_cover_subtitle))
-    story.append(HRFlowable(width="100%", thickness=1, color=c_border, spaceBefore=6, spaceAfter=18))
+    story.append(Paragraph("A Multi-Scale Hydro-Informatics & Disaster Architecture Integrating Hillslope Landslide Factor of Safety (FS &lt; 1.0), Catchment Hydrology, 1D Saint-Venant PI-GNN Stormwater Modeling, Dynamic Arabian Sea Tidal Lock, and Flood-Aware GraphHopper Routing", style_cover_subtitle))
+    story.append(HRFlowable(width="100%", thickness=1, color=c_border, spaceBefore=4, spaceAfter=14))
     
     # Metadata Table
     meta_data = [
         [Paragraph("<b>Target Competition / Track:</b>", style_cover_meta), Paragraph("e-Yantra Innovation Challenge (eYIC) · Hydro-Informatics & Edge AI Track", style_cover_meta)],
         [Paragraph("<b>Institutional Alignment:</b>", style_cover_meta), Paragraph("MoES (Mission Mausam) · CWC India-WRIS · NDMA National Disaster Management", style_cover_meta)],
-        [Paragraph("<b>Sensing Triad:</b>", style_cover_meta), Paragraph("Space (NISAR, EOS-04, Sentinel-1) + Radar (IMD DWR) + Ground (CRNS Mesoscale)", style_cover_meta)],
+        [Paragraph("<b>Sensing Triad:</b>", style_cover_meta), Paragraph("Space (NISAR L+S, EOS-04, Sentinel-1) + Radar (IMD DWR) + Ground (CRNS Mesoscale)", style_cover_meta)],
         [Paragraph("<b>Edge Compute & Telemetry:</b>", style_cover_meta), Paragraph("Qualcomm Dragonwing QCS6490 / RB3 Gen 2 · 3GPP Rel-17 NTN Sat-IoT + CRSN TVWS", style_cover_meta)],
-        [Paragraph("<b>Core Scientific Novelty:</b>", style_cover_meta), Paragraph("CRNS-conditioned PINN drainage boundary + Hillslope Infinite Slope FS Edge Coupling", style_cover_meta)],
-        [Paragraph("<b>Release Version & Date:</b>", style_cover_meta), Paragraph("Enhanced Master Version 2.0 · September 2026", style_cover_meta)]
+        [Paragraph("<b>Hydrodynamic & AI Engines:</b>", style_cover_meta), Paragraph("1D Saint-Venant PI-GNN (sub-4s) + Arabian Sea Tidal Lock + GraphHopper B2B Routing", style_cover_meta)],
+        [Paragraph("<b>Release Version & Date:</b>", style_cover_meta), Paragraph("Integrated Master Version 2.1 · September 2026", style_cover_meta)]
     ]
     meta_table = Table(meta_data, colWidths=[150, 350])
     meta_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), c_bg_light),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
         ('BOX', (0,0), (-1,-1), 1, c_border),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
     story.append(meta_table)
     
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 15))
     # Executive Abstract Box
     abs_text = (
-        "<b>Executive Summary & The Unified Vision:</b> India's hydro-meteorological crisis does not exist in silos. "
+        "<b>Executive Summary & The Unified Vision:</b> India\'s hydro-meteorological crisis does not exist in silos. "
         "During extreme monsoon convective storms, precipitation triggers severe <b>hillslope translational landslides</b> "
         "in upstream ghats and valley slopes at the exact same moment that surging <b>saturation-excess runoff</b> cascades "
         "downstream to submerge urban stormwater networks in under 60 minutes (as observed in Mumbai, Wayanad, Chennai, "
-        "and Himalayan foothill corridors). Existing government platforms (CWC's ~360 river gauge network, IMD's ~47–50 "
+        "and Himalayan foothill corridors). Existing government platforms (CWC\'s ~360 river gauge network, IMD\'s ~47–50 "
         "radar grid) address these disasters independently. <b>Project VARUNA-NET 2.0</b> unifies these disciplines into a single "
         "continuous physics-and-AI pipeline. By deploying <b>Cosmic-Ray Neutron Sensing (CRNS)</b>, the system measures the "
         "single master physical state variable linking both hazards: <i>antecedent vadose-zone soil saturation (θ)</i>. "
-        "On steep hillslopes, CRNS drives edge-computed geotechnical <b>Factor of Safety (FS < 1.0)</b> slope failure alerts. "
-        "In peri-urban catchments, CRNS data is injected as a dynamic boundary condition into an ultra-fast (<4 sec) "
-        "<b>Physics-Informed Graph Neural Network (PINN/GNN)</b> that simulates street-level pipe surcharge. Supported by "
-        "the newly operational <b>NASA-ISRO NISAR</b> satellite radar and <b>3GPP Release-17 NTN Satellite-IoT</b> failover, "
-        "VARUNA-NET 2.0 presents an end-to-end, field-deployable national disaster intelligence architecture."
+        "On steep hillslopes, CRNS drives edge-computed geotechnical <b>Factor of Safety (FS &lt; 1.0)</b> slope failure alerts. "
+        "In peri-urban catchments (such as Sanjay Gandhi National Park and the Mithi River headwaters), CRNS data is injected "
+        "as a dynamic boundary condition into an ultra-fast (&lt;4 sec) <b>Physics-Informed Graph Neural Network (PI-GNN)</b> "
+        "that solves 1D Saint-Venant hydrodynamic equations across municipal sewer graphs. Crucially, the architecture integrates "
+        "the <b>Arabian Sea Tidal Lock Mechanism</b> on coastal outfalls (&gt;4.2m astronomical spring tides corking gravity drainage) "
+        "and couples with a <b>Flood-Aware GraphHopper Routing Engine</b> that dynamically penalizes road weights W_ij = W_base + P(d) "
+        "for B2B fleet logistics (Swiggy, Uber) and emergency dispatches. Backed by <b>NASA-ISRO NISAR</b> satellite radar and "
+        "<b>3GPP Release-17 NTN Satellite-IoT</b> failover, VARUNA-NET 2.0 provides an end-to-end national disaster intelligence grid."
     )
     t_abs = Table([[Paragraph(abs_text, style_callout)]], colWidths=[500])
     t_abs.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#EBF8FF")),
         ('BOX', (0,0), (-1,-1), 1.5, colors.HexColor("#3182CE")),
-        ('PADDING', (0,0), (-1,-1), 10),
+        ('PADDING', (0,0), (-1,-1), 8),
     ]))
     story.append(t_abs)
     
@@ -249,129 +243,172 @@ def build_pdf(filename: str):
     story.append(HRFlowable(width="100%", thickness=1.5, color=c_primary, spaceBefore=2, spaceAfter=8))
     
     story.append(Paragraph(
-        "Previous approaches suffered from an artificial dichotomy: landslide early warning focused purely on slope stability "
+        "Previous disaster platforms suffered from an artificial divide: landslide monitoring operated purely on mountain slopes "
         "without considering downstream flood hydrographs, while urban flood nowcasting modeled city stormwater pipes without "
-        "knowing the antecedent moisture state of the upstream catchment. VARUNA-NET 2.0 closes this gap completely:",
+        "knowing upstream catchment antecedent moisture or ocean tidal locking. VARUNA-NET 2.0 closes this gap completely:",
         style_body
     ))
 
     gap_data = [
-        [Paragraph("<b>Capability Dimension</b>", style_table_header), Paragraph("<b>Source Plan 1 (Landslide Framework)</b>", style_table_header), Paragraph("<b>Source Plan 2 (VARUNA-NET 1.0)</b>", style_table_header), Paragraph("<b>Unified VARUNA-NET 2.0 (Merged Plan)</b>", style_table_header)],
+        [Paragraph("<b>Capability Dimension</b>", style_table_header), Paragraph("<b>Landslide Geotech Framework</b>", style_table_header), Paragraph("<b>Mumbai PI-GNN Framework</b>", style_table_header), Paragraph("<b>Unified VARUNA-NET 2.0 Grid</b>", style_table_header)],
         [
             Paragraph("<b>Target Hazards</b>", style_table_cell),
             Paragraph("Hillslope landslides & natural river discharge", style_table_cell),
-            Paragraph("Macro-catchment floods & urban street flooding", style_table_cell),
-            Paragraph("<b>Unified Cascade:</b> Hillslope failure + River discharge + Urban pipe surcharge", style_table_cell)
+            Paragraph("Urban pipe surcharge & coastal street ponding", style_table_cell),
+            Paragraph("<b>Unified Cascade:</b> Hillslope failure + River discharge + 1D Saint-Venant surcharge + Tidal backflow", style_table_cell)
         ],
         [
             Paragraph("<b>CRNS Sensor Role</b>", style_table_cell),
             Paragraph("Computes pore-water pressure u(θ) and Mohr-Coulomb shear loss", style_table_cell),
-            Paragraph("Injected as upstream boundary condition for urban drainage PINN", style_table_cell),
-            Paragraph("<b>Dual Physics Engine:</b> Simultaneously evaluates slope FS and PINN inflow boundary", style_table_cell)
+            Paragraph("Assumes fixed boundary inflow hydrographs", style_table_cell),
+            Paragraph("<b>Dual Physics Engine:</b> Evaluates slope FS and injects upstream saturation into Mithi River boundary Q_boundary(θ)", style_table_cell)
         ],
         [
-            Paragraph("<b>Space Segment</b>", style_table_cell),
-            Paragraph("None (in-situ ground sensing only)", style_table_cell),
-            Paragraph("Tri-SAR: NISAR (L+S), EOS-04 (C), Sentinel-1 (C)", style_table_cell),
-            Paragraph("<b>Tri-SAR Fusion:</b> Ground CRNS validated against NISAR/Sentinel specular flood masks", style_table_cell)
+            Paragraph("<b>Coastal Boundary</b>", style_table_cell),
+            Paragraph("Not considered (inland mountainous terrain)", style_table_cell),
+            Paragraph("Semi-diurnal tides corking 186 outfalls (>4.2m lock)", style_table_cell),
+            Paragraph("<b>Coupled Coastal Engine:</b> Dynamic astronomical tide solver controlling flap gates & pump station capacity", style_table_cell)
         ],
         [
-            Paragraph("<b>Radar & Meteorology</b>", style_table_cell),
-            Paragraph("Local tipping bucket rain gauge & barometric sensors", style_table_cell),
-            Paragraph("IMD Doppler Radar (DWR) + ConvLSTM nowcasting", style_table_cell),
-            Paragraph("<b>Fused Meteorology:</b> ConvLSTM 0–3h rainfall fields blended with local gauge ground-truth", style_table_cell)
+            Paragraph("<b>Space & Radar Segment</b>", style_table_cell),
+            Paragraph("Ground rain gauges & tiltmeters only", style_table_cell),
+            Paragraph("IMD Doppler Radar (DWR) ConvLSTM nowcast", style_table_cell),
+            Paragraph("<b>Tri-SAR + Radar:</b> NISAR (L+S) + Sentinel-1 + IMD Radar blended with in-situ CRNS ground truth", style_table_cell)
         ],
         [
-            Paragraph("<b>Hydrodynamic Solver</b>", style_table_cell),
-            Paragraph("Lumped synthetic unit hydrograph convolution", style_table_cell),
-            Paragraph("1D/2D Graph-PINN surrogate for SWMM (<4s inference)", style_table_cell),
-            Paragraph("<b>Multi-Scale Physics:</b> Geotechnical infinite slope + Graph-PINN urban pipe network", style_table_cell)
+            Paragraph("<b>Routing & B2B Logistics</b>", style_table_cell),
+            Paragraph("Static evacuation route warnings", style_table_cell),
+            Paragraph("GraphHopper flood routing API (P(d) penalties)", style_table_cell),
+            Paragraph("<b>Dynamic Fleet Navigation:</b> Sub-second GraphHopper edge weight update for Swiggy/Uber & emergency fleets", style_table_cell)
         ],
         [
             Paragraph("<b>Communication Layer</b>", style_table_cell),
             Paragraph("Cognitive Radio (CRSN TV White Space in valleys)", style_table_cell),
-            Paragraph("4G/5G primary + 3GPP Rel-17 NTN Sat-IoT fallback", style_table_cell),
-            Paragraph("<b>Triple Redundancy:</b> 4G/5G + Direct-to-Satellite NTN + CRSN for deep mountain gorges", style_table_cell)
+            Paragraph("Standard cellular 4G/5G backhaul", style_table_cell),
+            Paragraph("<b>Triple Redundancy:</b> 4G/5G primary + 3GPP Rel-17 NTN Sat-IoT + CRSN TV White Space in gorges", style_table_cell)
         ]
     ]
-    t_gap = Table(gap_data, colWidths=[90, 130, 130, 150])
+    t_gap = Table(gap_data, colWidths=[85, 130, 130, 155])
     t_gap.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), c_primary),
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_bg_light]),
-        ('PADDING', (0,0), (-1,-1), 4),
+        ('PADDING', (0,0), (-1,-1), 3.5),
     ]))
     story.append(t_gap)
 
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
 
-    # Add Figure 2 (Unified Architecture)
+    # Add Figure 1 (Unified Architecture)
     fig_arch = "/home/veer/.gemini/antigravity/scratch/crns_hazard_prediction/figures/varuna_2_architecture.png"
     if os.path.exists(fig_arch):
-        story.append(Image(fig_arch, width=490, height=270))
-        story.append(Paragraph("<b>Figure 1:</b> Project VARUNA-NET 2.0 Three-Tier System Architecture connecting Space Radar, Hillslope Geotechnical Sentinels, Peri-Urban Catchments, and Hyperlocal Urban PINN Surrogates.", ParagraphStyle('Cap1', fontName='Helvetica-Oblique', fontSize=7.5, textColor=colors.HexColor("#4A5568"), alignment=TA_CENTER, spaceBefore=3, spaceAfter=8)))
+        story.append(Image(fig_arch, width=490, height=245))
+        story.append(Paragraph("<b>Figure 1:</b> Project VARUNA-NET 2.0 System Architecture connecting Space Radar, Hillslope Sentinels, Peri-Urban Catchments, Urban PI-GNN Surrogates, Arabian Sea Tidal Gates, and GraphHopper B2B Fleet Navigation.", ParagraphStyle('Cap1', fontName='Helvetica-Oblique', fontSize=7.5, textColor=colors.HexColor("#4A5568"), alignment=TA_CENTER, spaceBefore=3, spaceAfter=8)))
 
     story.append(PageBreak())
 
     # =========================================================
     # SECTION 2: THREE-TIER TECHNICAL STACK & PHYSICS
     # =========================================================
-    story.append(Paragraph("2. Three-Tier Technical Stack & Scientific Formulations", style_h1))
+    story.append(Paragraph("2. Technical Stack, Geotechnical Physics & Hydrodynamics", style_h1))
     story.append(HRFlowable(width="100%", thickness=1.5, color=c_primary, spaceBefore=2, spaceAfter=8))
 
-    story.append(Paragraph("Tier 1A: Hillslope Geotechnical Sentinel (Landslides)", style_h2))
+    story.append(Paragraph("2.1 Tier 1A: Hillslope Geotechnical Sentinel (Landslides)", style_h2))
     story.append(Paragraph(
-        "Deployed on steep, metastable slopes (e.g., Western Ghats ghat roads, Himalayan valleys, urban hillocks). "
+        "Deployed on steep, metastable slopes (e.g., Western Ghats ghats, Himalayan corridors, and Mumbai\'s urban hillocks in Ghatkopar/Malad). "
         "CRNS neutron counts are converted via the Desilets equation and evaluated dynamically against the "
         "<b>Infinite Slope Stability Criterion</b>:",
         style_body
     ))
     story.append(Paragraph(
-        "<b>FS(t) = [ c' + (γ_bulk(θ) · z · cos²β - u(θ)) · tanφ' ] / [ γ_bulk(θ) · z · sinβ · cosβ ]</b>",
-        ParagraphStyle('Eq1', fontName='Helvetica-Bold', fontSize=9, textColor=c_primary, alignment=TA_CENTER, spaceBefore=3, spaceAfter=5)
+        "<b>FS(t) = [ c\' + (γ_bulk(θ) · z · cos²β - u(θ)) · tanφ\' ] / [ γ_bulk(θ) · z · sinβ · cosβ ]</b>",
+        ParagraphStyle('Eq1', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_primary, alignment=TA_CENTER, spaceBefore=2, spaceAfter=4)
     ))
     story.append(Paragraph(
         "Where pore-water pressure u(θ) = m(θ) · γ_w · z · cos²β activates as CRNS saturation S_r = θ / θ_sat exceeds 0.70. "
-        "Additionally, dynamic Rainfall Intensity-Duration (I-D) thresholds are shifted in real time: "
-        "<b>I_crit(D, θ) = α₀ · [ 1 - (θ / θ_sat) ]^γ · D^(-β_slope)</b>, eliminating false alarms on dry slopes.",
+        "Dynamic Rainfall Intensity-Duration (I-D) thresholds are updated: "
+        "<b>I_crit(D, θ) = α₀ · [ 1 - (θ / θ_sat) ]^γ · D^(-β_slope)</b>, suppressing false alarms on dry soils.",
         style_body
     ))
 
-    story.append(Paragraph("Tier 1B: Macro-Catchment Hydrological Sentinel (Riverine Inundation)", style_h2))
+    story.append(Paragraph("2.2 Tier 1B: Macro-Catchment Hydrology & Mithi River Boundary Coupling", style_h2))
     story.append(Paragraph(
-        "Deployed in peri-urban catchments and river corridors upstream of urban centers. "
-        "The potential retention capacity S_ret is updated continuously by the CRNS moisture deficit: "
-        "<b>S_ret(t) = S_max · [ 1 - (θ_CRNS(t) / θ_sat) ]</b>. Direct surface runoff Q_excess is calculated and cross-referenced "
-        "against <b>NASA-ISRO NISAR</b> (L-band penetrates forest canopies) and Sentinel-1 SAR specular reflection polygons.",
+        "Deployed in peri-urban catchments (e.g., Sanjay Gandhi National Park, Vihar and Tulsi lakes). "
+        "The potential retention capacity S_ret is continuously updated by the CRNS moisture deficit: "
+        "<b>S_ret(t) = S_max · [ 1 - (θ_CRNS(t) / θ_sat) ]</b>. Direct surface runoff Q_excess is calculated and injected "
+        "as a dynamic boundary inflow hydrograph into the Mithi River inlet nodes of Mumbai\'s urban drainage network:",
         style_body
+    ))
+    story.append(Paragraph(
+        "<b>Q_boundary(t, θ) = Q_base + [ (P_eff(t)² / (P_eff(t) + S_ret(θ))) · A_catchment · (θ / θ_sat)² ] / 3.6</b>",
+        ParagraphStyle('EqCatch', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_secondary, alignment=TA_CENTER, spaceBefore=2, spaceAfter=4)
     ))
 
-    story.append(Paragraph("Tier 2: Hyperlocal Urban Nowcasting Grid (Pluvial Drainage Surcharge)", style_h2))
+    story.append(Paragraph("2.3 Tier 2: 1D Saint-Venant Physics-Informed Graph Neural Network (PI-GNN)", style_h2))
     story.append(Paragraph(
-        "Municipal stormwater networks are parsed as directed graphs G = (V, E) in PyTorch Geometric. "
-        "Rather than waiting 60–90 minutes for 2D SWMM/HEC-RAS numerical convergence, a <b>Modular Coupled PINN (MC-PINN)</b> "
-        "solves the 1D Saint-Venant sewer equations and 2D overland shallow-water flow in <b>sub-4-second inference</b>:",
+        "Municipal stormwater conduits are parsed as a directed graph G = (V, E). Instead of waiting 60–90 minutes for numerical "
+        "SWMM/HEC-RAS solvers to converge, an edge-based <b>Physics-Informed Graph Neural Network (PI-GNN)</b> solves 1D sewer hydrodynamics "
+        "in <b>sub-4-second inference</b> by embedding the full 1D Saint-Venant Partial Differential Equations directly into its loss function:",
         style_body
     ))
     story.append(Paragraph(
-        "<b>L_PINN = L_continuity + L_momentum + L_manhole_flux + λ_CRNS · || Q_boundary(t) - f(θ_Tier1B, Q_excess) ||²</b>",
-        ParagraphStyle('Eq2', fontName='Helvetica-Bold', fontSize=9, textColor=c_purple, alignment=TA_CENTER, spaceBefore=3, spaceAfter=5)
+        "<b>Continuity (Mass Conservation):</b> ∂A/∂t + ∂Q/∂x - q_L = 0<br/>"
+        "<b>Momentum Conservation:</b> ∂Q/∂t + ∂(Q²/A)/∂x + g·A·(∂h/∂x) - g·A·(S_0 - S_f) = 0",
+        ParagraphStyle('EqSV', fontName='Helvetica', fontSize=8, textColor=colors.HexColor("#2D3748"), alignment=TA_CENTER, spaceBefore=2, spaceAfter=3)
     ))
     story.append(Paragraph(
-        "<b>The Central Fusion Innovation:</b> The upstream peri-urban CRNS saturation state is explicitly injected as a dynamic "
-        "boundary influx term (Q_boundary). This prevents urban nowcasts from underpredicting flash flooding when storms move from saturated "
-        "rural catchments into city limits.",
+        "Where Manning friction slope S_f = n²·|Q|·Q / (A²·R^(4/3)). The total loss function optimized during training is:",
         style_body
     ))
+    story.append(Paragraph(
+        "<b>L_total = λ_data·L_data + λ_mass·L_mass + λ_mom·L_mom + λ_CRNS·|| Q_inlet - Q_boundary(θ_CRNS) ||²</b>",
+        ParagraphStyle('EqLoss', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_purple, alignment=TA_CENTER, spaceBefore=2, spaceAfter=4)
+    ))
+
+    story.append(Paragraph("2.4 Dynamic Arabian Sea Tidal Lock Mechanism & 186 Outfall Sluice Flap Gates", style_h2))
+    story.append(Paragraph(
+        "Mumbai\'s drainage grid relies on 186 outfalls discharging directly into the Arabian Sea, Mahim Creek, and Thane Creek. "
+        "During astronomical spring tides, the sea level swings up to +4.8m CD. Whenever the tide height exceeds the outfall invert level "
+        "(h_tide ≥ 4.2m), heavy steel flap gates slam shut to prevent sea water from backflowing into the city. "
+        "This completely corks gravity drainage (Q_gravity = 0 m³/s), meaning incoming rainwater and Mithi River discharge "
+        "must be evacuated entirely by mechanical BMC dewatering pump stations (e.g., Haji Ali, Love Grove, Britannia, Irla, Gazdarbandh). "
+        "VARUNA-NET 2.0 explicitly incorporates the dynamic downstream coastal boundary condition:",
+        style_body
+    ))
+    story.append(Paragraph(
+        "<b>h_outfall(t) = max( h_pipe(t), h_tide(t) ), &nbsp;&nbsp; Q_outfall(t) = Q_pump + (1 - Gate_Locked(t)) · Q_gravity(h_pipe - h_tide)</b>",
+        ParagraphStyle('EqTide', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_accent, alignment=TA_CENTER, spaceBefore=2, spaceAfter=4)
+    ))
+
+    story.append(Paragraph("2.5 Flood-Aware GraphHopper Routing Engine with Dynamic Road Edge Penalties", style_h2))
+    story.append(Paragraph(
+        "Predicted 2D overland water depths d(x, y, t) are mapped in real time onto the urban road network graph G_road = (V, E). "
+        "Each road edge weight W_ij is dynamically recomputed to provide actionable rerouting for quick-commerce (Swiggy, Zomato, Zepto), "
+        "ride-hailing (Uber, Ola), and municipal emergency fleets (ambulances, BMC pump trucks):",
+        style_body
+    ))
+    story.append(Paragraph(
+        "<b>W_ij(d) = W_base + P(d), &nbsp; where &nbsp; P(d) = "
+        "0 (d &lt; 5cm) &nbsp;|&nbsp; W_base · [1 + 0.40(d - 5)] (5 ≤ d &lt; 15cm) &nbsp;|&nbsp; ∞ (d ≥ 15cm - Severed)</b>",
+        ParagraphStyle('EqRoute', fontName='Helvetica-Bold', fontSize=8.5, textColor=c_warning, alignment=TA_CENTER, spaceBefore=2, spaceAfter=4)
+    ))
+
+    story.append(PageBreak())
+
+    # Multi-Hazard Simulation Figure
+    fig_sim = "/home/veer/.gemini/antigravity/scratch/crns_hazard_prediction/figures/varuna_2_multi_hazard_sim.png"
+    if os.path.exists(fig_sim):
+        story.append(Image(fig_sim, width=490, height=245))
+        story.append(Paragraph("<b>Figure 2:</b> 36-Hour Multi-Hazard Simulation: Convective storm driving simultaneous hillslope FS collapse (Landslide), catchment discharge surge (Riverine Flood), and street-level pipe surcharge (Urban Pluvial Inundation).", ParagraphStyle('Cap2', fontName='Helvetica-Oblique', fontSize=7.5, textColor=colors.HexColor("#4A5568"), alignment=TA_CENTER, spaceBefore=3, spaceAfter=8)))
 
     story.append(Spacer(1, 6))
 
-    # Add Figure 1 (Multi-Hazard Simulation)
-    fig_sim = "/home/veer/.gemini/antigravity/scratch/crns_hazard_prediction/figures/varuna_2_multi_hazard_sim.png"
-    if os.path.exists(fig_sim):
-        story.append(Image(fig_sim, width=490, height=270))
-        story.append(Paragraph("<b>Figure 2:</b> 36-Hour Multi-Hazard Simulation: Convective storm driving simultaneous hillslope FS collapse (Landslide), catchment discharge surge (Riverine Flood), and street-level pipe surcharge (Urban Pluvial Inundation).", ParagraphStyle('Cap2', fontName='Helvetica-Oblique', fontSize=7.5, textColor=colors.HexColor("#4A5568"), alignment=TA_CENTER, spaceBefore=3, spaceAfter=8)))
+    # Mumbai PI-GNN & Tidal Lock Figure
+    fig_mumbai = "/home/veer/.gemini/antigravity/scratch/crns_hazard_prediction/figures/mumbai_pignn_tidal_routing.png"
+    if os.path.exists(fig_mumbai):
+        story.append(Image(fig_mumbai, width=490, height=230))
+        story.append(Paragraph("<b>Figure 3:</b> Mumbai Coastal Coupling Analysis: (A) Semi-diurnal Arabian Sea Tide & 4.2m Outfall Sluice Gate Locking; (B) Severe Pluvial Surcharge under Compound Rain + Tidal Lock; (C) GraphHopper Road Edge Routing Penalties P(d).", ParagraphStyle('Cap3', fontName='Helvetica-Oblique', fontSize=7.5, textColor=colors.HexColor("#4A5568"), alignment=TA_CENTER, spaceBefore=3, spaceAfter=8)))
 
     story.append(PageBreak())
 
@@ -391,22 +428,22 @@ def build_pdf(filename: str):
         [Paragraph("<b>Alert Tier</b>", style_table_header), Paragraph("<b>Trigger Conditions (Multi-Hazard Logic)</b>", style_table_header), Paragraph("<b>Target Stakeholders & Actionable Protocols</b>", style_table_header)],
         [
             Paragraph("<b>Tier A<br/>WATCH</b>", ParagraphStyle('TA', fontName='Helvetica-Bold', fontSize=8, textColor=colors.HexColor("#2B6CB0"))),
-            Paragraph("• CRNS neutron-drop anomaly detected (θ/θ_sat > 0.70).<br/>• No radar cloudburst or SAR confirmation yet.<br/>• Slope FS between 1.30 and 1.50.", style_table_cell),
+            Paragraph("• CRNS neutron-drop anomaly detected (θ/θ_sat > 0.70).<br/>• No radar cloudburst or SAR confirmation yet.<br/>• Slope FS between 1.30 and 1.50.<br/>• Astronomical tide < 3.5m CD.", style_table_cell),
             Paragraph("• SDMA & municipal situational dashboard notification.<br/>• Pre-position mobile dewatering pumps in low-lying wards.<br/>• Routine 15-minute telemetry polling.", style_table_cell)
         ],
         [
             Paragraph("<b>Tier B<br/>WARNING</b>", ParagraphStyle('TB', fontName='Helvetica-Bold', fontSize=8, textColor=colors.HexColor("#D69E2E"))),
-            Paragraph("• CRNS saturation > 0.80 + SAR flood polygon confirmation.<br/>• Hillslope FS drops into Advisory zone (1.10 < FS ≤ 1.30).<br/>• Radar nowcast predicts >30 mm/h incoming rain.", style_table_cell),
-            Paragraph("• District Administration, Irrigation Dept & Traffic Police.<br/>• Issue heavy traffic advisories along flood-prone arterial roads.<br/>• Mobilize maintenance crews to inspect culverts & ghat slopes.", style_table_cell)
+            Paragraph("• CRNS saturation > 0.80 + SAR flood polygon confirmation.<br/>• Hillslope FS drops into Advisory zone (1.10 < FS ≤ 1.30).<br/>• Radar nowcast predicts >30 mm/h incoming rain.<br/>• Tide rising above 3.8m CD.", style_table_cell),
+            Paragraph("• District Administration, Irrigation Dept & Traffic Police.<br/>• Issue heavy traffic advisories along flood-prone arterial roads.<br/>• Pre-activate BMC dewatering stations (Haji Ali, Love Grove).", style_table_cell)
         ],
         [
             Paragraph("<b>Tier C<br/>NOWCAST ALERT</b>", ParagraphStyle('TC', fontName='Helvetica-Bold', fontSize=8, textColor=c_warning)),
-            Paragraph("• Urban PINN predicts street inundation > 25 cm within 60–120 min.<br/>• Intersection recall > 85%, MAE < 8 cm.<br/>• Hillslope FS drops to 1.02–1.10 (Marginal Stability).", style_table_cell),
-            Paragraph("• Municipal Control Room & automated traffic diversion.<br/>• Deploy physical barricades at underpasses (e.g., Milan Subway).<br/>• Automated push alerts to citizen navigation apps (Google/Apple Maps).", style_table_cell)
+            Paragraph("• PI-GNN predicts street inundation > 15 cm within 60–120 min.<br/>• Spring high tide > 4.2m triggers Outfall Tidal Lock.<br/>• Hillslope FS drops to 1.02–1.10 (Marginal Stability).", style_table_cell),
+            Paragraph("• Municipal Control Room & automated traffic diversion.<br/>• GraphHopper API activates automated B2B route detours.<br/>• Deploy physical barricades at underpasses (e.g., Milan Subway).", style_table_cell)
         ],
         [
             Paragraph("<b>Tier D<br/>EXTREME / RED</b>", ParagraphStyle('TD', fontName='Helvetica-Bold', fontSize=8, textColor=c_accent)),
-            Paragraph("• <b>Landslide Failure Imminent:</b> Hillslope FS ≤ 1.00.<br/>• <b>Catastrophic Inundation:</b> Street depth > 45 cm or CWC river gauge crosses Highest Flood Level (HFL).", style_table_cell),
+            Paragraph("• <b>Landslide Failure Imminent:</b> Hillslope FS ≤ 1.00.<br/>• <b>Catastrophic Inundation:</b> Street depth > 45 cm under complete Tidal Lock.<br/>• CWC river gauge crosses Highest Flood Level (HFL).", style_table_cell),
             Paragraph("• <b>NDRF / SDRF Full Mobilization</b> per Red Bulletin protocol.<br/>• Automated siren sounding in vulnerable hillside slums & floodplains.<br/>• <b>3GPP Rel-17 NTN Satellite Broadcast</b> if cellular towers fail.", style_table_cell)
         ]
     ]
@@ -416,7 +453,7 @@ def build_pdf(filename: str):
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_bg_light]),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
     ]))
     story.append(t_alert)
 
@@ -435,7 +472,7 @@ def build_pdf(filename: str):
     story.append(PageBreak())
 
     # =========================================================
-    # SECTION 4: HARDWARE, ROADMAP & EVALUATION NOVELTY
+    # SECTION 5: HARDWARE, ROADMAP & EVALUATION NOVELTY
     # =========================================================
     story.append(Paragraph("5. Hardware Specification, Budget & Dual-Path Strategy", style_h1))
     story.append(HRFlowable(width="100%", thickness=1.5, color=c_primary, spaceBefore=2, spaceAfter=8))
@@ -479,7 +516,7 @@ def build_pdf(filename: str):
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_bg_light]),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
     ]))
     story.append(t_hw2)
 
@@ -496,17 +533,17 @@ def build_pdf(filename: str):
         ],
         [
             Paragraph("<b>Phase 2 (Months 3–4)<br/>AI Surrogates & Slope Physics</b>", style_table_cell),
-            Paragraph("• Train ConvLSTM precipitation nowcaster (0–3h forward horizon).<br/>• Code and calibrate Infinite Slope Stability (FS) & Desilets CRNS modules.<br/>• Train MC-PINN graph surrogate on historical SWMM hydrodynamic runs.", style_table_cell),
-            Paragraph("PINN inference < 4 s per ward (99% speedup over SWMM); Landslide FS accuracy verified.", style_table_cell)
+            Paragraph("• Train ConvLSTM precipitation nowcaster (0–3h forward horizon).<br/>• Code and calibrate Infinite Slope Stability (FS) & Desilets CRNS modules.<br/>• Train 1D Saint-Venant PI-GNN graph surrogate on historical SWMM hydrodynamic runs.", style_table_cell),
+            Paragraph("PI-GNN inference < 4 s per ward (99% speedup over SWMM); Landslide FS accuracy verified.", style_table_cell)
         ],
         [
-            Paragraph("<b>Phase 3 (Months 5–6)<br/>Space Fusion & NTN Failover</b>", style_table_cell),
-            Paragraph("• Integrate automated NASA-ISRO NISAR & Sentinel-1 SAR ingestion cron jobs.<br/>• Couple Tier 1B CRNS saturation as dynamic boundary condition in PINN loss.<br/>• Execute benchtop power-cut simulation to validate 3GPP Rel-17 NTN satellite failover.", style_table_cell),
-            Paragraph("100% packet delivery to cloud within 60 s under complete cellular tower blackout.", style_table_cell)
+            Paragraph("<b>Phase 3 (Months 5–6)<br/>Tidal Lock & NTN Failover</b>", style_table_cell),
+            Paragraph("• Integrate dynamic Arabian Sea tidal lock solver & outfall flap gate logic.<br/>• Couple Tier 1B CRNS saturation as dynamic boundary condition in PI-GNN loss.<br/>• Implement GraphHopper B2B routing engine with dynamic road edge penalties P(d).<br/>• Execute benchtop power-cut simulation to validate 3GPP Rel-17 NTN satellite failover.", style_table_cell),
+            Paragraph("100% packet delivery to cloud within 60 s under complete cellular tower blackout; dynamic reroute latency < 500 ms.", style_table_cell)
         ],
         [
             Paragraph("<b>Phase 4 (Months 7–8)<br/>Field Trial, Dashboard & Pitch</b>", style_table_cell),
-            Paragraph("• Build Mapbox GL real-time command dashboard showing multi-hazard alerts.<br/>• Conduct controlled catchment saturation test (irrigation-induced wetting).<br/>• Replay historical cloudburst events (Mumbai 2005/2024, Wayanad 2024, Chennai 2015/2023).", style_table_cell),
+            Paragraph("• Build real-time command dashboard showing multi-hazard alerts, tidal lock status & fleet routes.<br/>• Conduct controlled catchment saturation test (irrigation-induced wetting).<br/>• Replay historical cloudburst events (Mumbai 2005/2024, Wayanad 2024, Chennai 2015/2023).", style_table_cell),
             Paragraph("Overall false-positive reduction > 65%; pitch demonstration ready for eYIC evaluation.", style_table_cell)
         ]
     ]
@@ -516,7 +553,7 @@ def build_pdf(filename: str):
         ('GRID', (0,0), (-1,-1), 0.5, c_border),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, c_bg_light]),
-        ('PADDING', (0,0), (-1,-1), 5),
+        ('PADDING', (0,0), (-1,-1), 4.5),
     ]))
     story.append(t_road2)
 
@@ -525,10 +562,11 @@ def build_pdf(filename: str):
     story.append(HRFlowable(width="100%", thickness=1.5, color=c_primary, spaceBefore=2, spaceAfter=8))
     story.append(Paragraph(
         "<b>What Makes VARUNA-NET 2.0 Superior:</b><br/>"
-        "1. <b>Multi-Hazard Physics Unification:</b> It is the first architecture to recognize that hillslope landslides and urban stormwater surcharges share the exact same physical state driver (CRNS antecedent saturation), unifying two previously fractured disaster response paradigms.<br/>"
-        "2. <b>CRNS-Conditioned PINN Boundary:</b> It injects ground-truth upstream soil moisture into a sub-4-second physics-informed neural network—a novel formulation unaddressed in 2024–2026 published literature.<br/>"
-        "3. <b>NISAR + NTN Space Integration:</b> Fully grounds remote sensing in the now-operational 2025/2026 NASA-ISRO NISAR mission (L+S band) and 3GPP Release-17 NTN satellite-IoT standards.<br/>"
-        "4. <b>Realistic Dual-Path Implementation:</b> Provides an affordable, verifiable prototype path (ESP32 + Raspberry Pi 5) for competition judges, backed by a production blueprint on Qualcomm Dragonwing hardware for actual field deployment.",
+        "1. <b>Multi-Hazard Physics Unification:</b> Unifies hillslope landslides and urban stormwater surcharges under a single physical master variable (CRNS antecedent vadose-zone moisture θ).<br/>"
+        "2. <b>1D Saint-Venant PI-GNN with Upstream CRNS Coupling:</b> Replaces slow 60-minute hydrodynamic models with sub-4-second physics-informed neural surrogates explicitly driven by upstream catchment saturation.<br/>"
+        "3. <b>Dynamic Coastal Tidal Lock Mechanics:</b> Directly models the real-life failure mode of Mumbai\'s 186 outfalls where &gt;4.2m spring tides seal flap gates, triggering severe pluvial backflow.<br/>"
+        "4. <b>Actionable B2B GraphHopper Routing:</b> Bridges the last-mile gap from alert issuance to commercial impact, providing dynamic road edge penalties W_ij = W_base + P(d) for quick-commerce, ride-hailing, and emergency ambulances.<br/>"
+        "5. <b>NISAR + NTN Space Integration:</b> Fully grounds remote sensing in the operational 2025/2026 NASA-ISRO NISAR mission (L+S band) and 3GPP Release-17 NTN satellite-IoT standards.",
         style_body
     ))
 
