@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VARUNA-NET 2.0 | Geohazard Intelligence &amp; Physics Simulation Lab</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes pulse-subtle { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .animate-pulse-subtle { animation: pulse-subtle 1.2s ease-in-out infinite; }
+    input[type=range] { accent-color: #0284c7; }
+    canvas { image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; cursor: crosshair; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased p-3.5 min-h-screen font-sans select-none custom-scrollbar">
+
+  <!-- ========================================================= -->
+  <!-- TOP HEADER & PROJECT IDENTITY (BRIGHT DAYLIGHT THEME) -->
+  <!-- ========================================================= -->
+  <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-600 text-white rounded-2xl p-4 mb-3.5 shadow-xl">
+    <div class="flex flex-wrap justify-between items-center gap-4">
+      
+      <!-- Brand & Project Title (No Personal Name) -->
+      <div class="flex items-center gap-3.5">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-xl bg-white text-blue-800 flex items-center justify-center font-black text-xl shadow-md border-2 border-white/80">
+            VN
+          </div>
+          <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white animate-ping"></span>
+          <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white"></span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-black tracking-wider text-white drop-shadow-sm">
+              PROJECT VARUNA-NET 2.0
+            </h1>
+            <span class="text-[10px] font-mono bg-white/20 text-white border border-white/30 px-2.5 py-0.5 rounded-full font-bold">
+              MULTI-HAZARD INTELLIGENCE LAB
+            </span>
+          </div>
+          <p class="text-xs text-blue-100 flex items-center gap-2 mt-0.5">
+            <span>Ground–Space–Edge AI Fusion Grid</span>
+            <span class="text-blue-300">&bull;</span>
+            <span>Real-Life Physics: Green-Ampt Infiltration &bull; Mohr-Coulomb Rupture &bull; Manning Surcharge</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls & Live Status Badges -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btn-about" class="bg-white/15 hover:bg-white/25 text-white text-xs px-3.5 py-1.5 rounded-xl border border-white/30 font-semibold transition flex items-center gap-1.5 backdrop-blur-sm shadow-sm">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          Architecture Spec
+        </button>
+        <button id="btn-export" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xs px-3.5 py-1.5 rounded-xl border border-emerald-400 font-bold transition flex items-center gap-1.5 shadow-md">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Export CSV Telemetry
+        </button>
+        <div class="hidden sm:flex items-center gap-2 font-mono text-xs pl-2 border-l border-white/20">
+          <div class="bg-black/20 px-2.5 py-1 rounded-lg border border-white/15">
+            <span class="text-blue-200">CRNS FLUX:</span> <span id="tele-flux" class="text-amber-300 font-bold">965 cph</span>
+          </div>
+          <div class="bg-black/20 px-2.5 py-1 rounded-lg border border-white/15">
+            <span class="text-blue-200">NISAR SAR:</span> <span class="text-emerald-300 font-bold">L+S SYNC</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- MAIN INTERACTIVE CONTROL DECK (BRIGHT WHITE/SLATE) -->
+  <!-- ========================================================= -->
+  <div class="bg-white border border-slate-200/90 rounded-2xl p-4 mb-3.5 shadow-md">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+      
+      <!-- Primary Playback Controls -->
+      <div class="lg:col-span-4 flex items-center gap-3">
+        <button id="btn-play" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-md shadow-blue-500/20 transition">
+          <svg id="icon-play" class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span id="txt-play">Run Simulation</span>
+        </button>
+        <button id="btn-reset" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-2 rounded-xl text-xs font-semibold transition">Reset</button>
+        
+        <div class="flex items-center gap-1 bg-slate-100 px-2 py-1.5 rounded-xl border border-slate-300 text-xs font-mono">
+          <span class="text-slate-500">SPEED:</span>
+          <button class="speed-btn px-1.5 py-0.5 rounded text-white font-bold bg-blue-600 shadow-sm" data-speed="1">1x</button>
+          <button class="speed-btn px-1.5 py-0.5 rounded text-slate-600 hover:text-slate-900" data-speed="2.5">2.5x</button>
+          <button class="speed-btn px-1.5 py-0.5 rounded text-slate-600 hover:text-slate-900" data-speed="5">5x</button>
+        </div>
+
+        <div class="font-mono text-sm pl-2">
+          <span class="text-slate-400">T:</span> <span id="lbl-time" class="text-blue-700 font-black text-base">0.0h</span>
+        </div>
+      </div>
+
+      <!-- 36-Hour Interactive Timeline Scrubber -->
+      <div class="lg:col-span-4 flex flex-col justify-center">
+        <div class="flex justify-between text-xs font-mono text-slate-500 mb-1">
+          <span>0.0h (Dry Initial)</span>
+          <span class="text-blue-700 font-bold">Storm Timeline Scrubber (36 Hours)</span>
+          <span>36.0h (Drainage)</span>
+        </div>
+        <input id="slider-time" type="range" min="0" max="36" step="0.1" value="0" class="w-full h-2.5 bg-slate-200 rounded-lg cursor-pointer accent-blue-600">
+      </div>
+
+      <!-- Real Disaster Presets -->
+      <div class="lg:col-span-4 flex items-center justify-end gap-2 flex-wrap">
+        <span class="text-xs text-slate-400 font-mono">PRESETS:</span>
+        <button class="preset-btn bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 font-semibold text-xs px-2.5 py-1.5 rounded-xl transition shadow-sm" data-preset="mumbai">
+          Mumbai Cloudburst
+        </button>
+        <button class="preset-btn bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 font-semibold text-xs px-2.5 py-1.5 rounded-xl transition shadow-sm" data-preset="wayanad">
+          Wayanad Landslide
+        </button>
+        <button class="preset-btn bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-semibold text-xs px-2.5 py-1.5 rounded-xl transition shadow-sm" data-preset="dry">
+          Dry Soil Test
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Real-Life Physics Parameters & Soil Geotechnical Selector -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 pt-3 border-t border-slate-200 text-xs font-mono">
+      
+      <!-- Soil Type Selector (Real Geotechnical Classes) -->
+      <div>
+        <label class="block text-slate-500 mb-1 font-semibold">Geological Regolith:</label>
+        <select id="sel-soil" class="w-full bg-slate-50 border border-slate-300 text-slate-800 font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500 shadow-sm">
+          <option value="laterite" selected>Western Ghats Laterite (c'=8kPa, φ'=29°)</option>
+          <option value="colluvium">Himalayan Colluvium Silt (c'=4kPa, φ'=33°)</option>
+          <option value="clay">Silty Clay Basin (c'=14kPa, φ'=22°)</option>
+          <option value="sand">Permeable Sandy Loam (c'=2kPa, φ'=36°)</option>
+        </select>
+      </div>
+
+      <!-- Slope Angle Beta -->
+      <div>
+        <div class="flex justify-between text-slate-500 mb-1">
+          <span class="font-semibold">Slope Incline &beta;:</span> <span id="lbl-slope" class="text-amber-700 font-black">34.0°</span>
+        </div>
+        <input id="slider-slope" type="range" min="15" max="45" step="1" value="34" class="w-full h-2 bg-slate-200 rounded accent-amber-600">
+      </div>
+
+      <!-- Peak Rain Intensity -->
+      <div>
+        <div class="flex justify-between text-slate-500 mb-1">
+          <span class="font-semibold">Peak Cloudburst Rain:</span> <span id="lbl-rainpeak" class="text-cyan-700 font-black">65 mm/h</span>
+        </div>
+        <input id="slider-rainpeak" type="range" min="15" max="130" step="5" value="65" class="w-full h-2 bg-slate-200 rounded accent-cyan-600">
+      </div>
+
+      <!-- Initial Soil Moisture Theta 0 -->
+      <div>
+        <div class="flex justify-between text-slate-500 mb-1">
+          <span class="font-semibold">Antecedent CRNS &theta;₀:</span> <span id="lbl-theta0" class="text-blue-700 font-black">0.18 m³/m³</span>
+        </div>
+        <input id="slider-theta0" type="range" min="0.08" max="0.44" step="0.02" value="0.18" class="w-full h-2 bg-slate-200 rounded accent-blue-600">
+      </div>
+
+      <!-- Stormwater Pipe Diameter / Capacity -->
+      <div>
+        <div class="flex justify-between text-slate-500 mb-1">
+          <span class="font-semibold">Conduit Diameter D:</span> <span id="lbl-dia" class="text-purple-700 font-black">1.8 m (35 m³/s)</span>
+        </div>
+        <input id="slider-dia" type="range" min="1.0" max="3.0" step="0.2" value="1.8" class="w-full h-2 bg-slate-200 rounded accent-purple-600">
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- DYNAMIC COMMON ALERTING PROTOCOL (CAP) BANNER (VIBRANT) -->
+  <!-- ========================================================= -->
+  <div id="banner-alert" class="bg-emerald-50 border-2 border-emerald-400 text-emerald-900 px-4 py-2.5 rounded-2xl mb-3.5 flex items-center justify-between shadow-sm transition-all duration-300">
+    <div class="flex items-center gap-3">
+      <span id="badge-alert" class="bg-emerald-600 text-white font-black text-xs px-3 py-1 rounded-lg tracking-wide uppercase shadow-sm">
+        TIER A : NORMAL / WATCH
+      </span>
+      <span id="desc-alert" class="text-xs font-mono text-emerald-800 font-medium">
+        Soil matric suction active. Factor of Safety FS &gt; 1.50. Urban storm drains flowing smoothly at safe capacity.
+      </span>
+    </div>
+    <div id="action-alert" class="text-xs font-bold text-emerald-800 font-mono uppercase bg-emerald-100 px-3 py-1 rounded-lg border border-emerald-300">
+      Routine Telemetry Polling (1h)
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- DUAL VISUAL SIMULATION CANVASES (VIBRANT DAYLIGHT RENDERING) -->
+  <!-- ========================================================= -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5 mb-3.5">
+    
+    <!-- LEFT CANVASES: TIER 1A HILLSLOPE GEOTECHNICAL STABILITY (LANDSLIDE) -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-amber-500 shadow-sm"></span>
+          <h2 class="font-bold text-sm tracking-wide text-slate-800">TIER 1A: HILLSLOPE GEOTECHNICAL SENTINEL</h2>
+          <span class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">Click canvas to inspect Mohr circle</span>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <span class="text-slate-500 font-semibold">FS:</span>
+          <span id="val-fs" class="text-emerald-700 font-black text-base">1.72</span>
+          <span id="badge-fs" class="text-xs px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">STABLE</span>
+        </div>
+      </div>
+
+      <!-- Hillslope Simulation Canvas -->
+      <div class="relative bg-sky-100 rounded-xl overflow-hidden border border-slate-300 flex justify-center items-center h-[290px] shadow-inner">
+        <canvas id="canvas-slope" width="560" height="290" class="w-full h-full"></canvas>
+        
+        <!-- Failure Alert Overlay -->
+        <div id="overlay-landslide" class="hidden absolute inset-0 bg-red-900/30 backdrop-blur-[1px] flex flex-col items-center justify-center pointer-events-none">
+          <div class="bg-red-600 text-white font-black text-base px-5 py-2.5 rounded-2xl border-2 border-white animate-bounce tracking-widest shadow-2xl">
+            &#9888; CRITICAL FAILURE: LANDSLIDE SLIP ACTIVE (FS &lt; 1.0)
+          </div>
+          <span class="text-xs text-white mt-1 font-mono bg-red-800/90 px-3 py-1 rounded-lg border border-red-400 shadow">
+            Pore Pressure u &gt; Effective Stress &sigma;' &bull; Shear Failure Plane Ruptured
+          </span>
+        </div>
+
+        <!-- Interactive Stress Tensor Inspection Tooltip -->
+        <div id="tooltip-mohr" class="hidden absolute top-3 right-3 bg-white/95 border-2 border-cyan-500 rounded-xl p-3 text-[11px] font-mono shadow-2xl z-20 pointer-events-none">
+          <div class="text-cyan-700 font-bold border-b border-slate-200 pb-1 mb-1">IN-SITU VIRTUAL PIEZOMETER</div>
+          <div class="text-slate-700">Depth z: <span id="mohr-z" class="text-slate-900 font-bold">1.40 m</span></div>
+          <div class="text-slate-700">Total Normal &sigma;: <span id="mohr-sigmatot" class="text-slate-900">22.4 kPa</span></div>
+          <div class="text-slate-700">Pore Pressure u: <span id="mohr-u" class="text-red-600 font-bold">14.2 kPa</span></div>
+          <div class="text-slate-700">Effective Stress &sigma;': <span id="mohr-sigmaeff" class="text-emerald-700 font-bold">8.2 kPa</span></div>
+          <div class="text-slate-700">Local FS: <span id="mohr-fs" class="text-amber-600 font-black">0.89</span></div>
+        </div>
+      </div>
+
+      <!-- Hillslope Live Physics Readouts -->
+      <div class="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-200 text-xs font-mono text-slate-700">
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">CRNS &theta; (VWC)</div>
+          <div id="val-theta" class="text-amber-700 font-black text-sm">0.180 m³/m³</div>
+        </div>
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">WETTING FRONT z_w</div>
+          <div id="val-wetting" class="text-cyan-700 font-black text-sm">0.12 m</div>
+        </div>
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">PORE PRESSURE u</div>
+          <div id="val-pore" class="text-red-600 font-black text-sm">0.00 kPa</div>
+        </div>
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">RESISTING &tau;f</div>
+          <div id="val-tau-res" class="text-emerald-700 font-black text-sm">28.4 kPa</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT CANVASES: TIER 2 URBAN PLUVIAL FLOOD & STORMWATER NETWORK -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-blue-600 shadow-sm"></span>
+          <h2 class="font-bold text-sm tracking-wide text-slate-800">TIER 2: HYPERLOCAL URBAN NOWCASTING GRID</h2>
+          <span class="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PINN &lt; 4s Inference</span>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-xs">
+          <span class="text-slate-500 font-semibold">Street Water:</span>
+          <span id="val-depth" class="text-blue-700 font-black text-base">0.0 cm</span>
+          <span id="badge-street" class="text-xs px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm">CLEAR</span>
+        </div>
+      </div>
+
+      <!-- Urban Simulation Canvas -->
+      <div class="relative bg-sky-100 rounded-xl overflow-hidden border border-slate-300 flex justify-center items-center h-[290px] shadow-inner">
+        <canvas id="canvas-urban" width="560" height="290" class="w-full h-full"></canvas>
+        <div id="overlay-flood" class="hidden absolute top-3 left-3 bg-red-600 text-white border-2 border-white px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold animate-pulse shadow-xl">
+          &#9888; UNDERPASS SUBMERGED (&gt; 45cm) &bull; AUTOMATED BARRICADES ACTIVE
+        </div>
+      </div>
+
+      <!-- Urban Live Physics Readouts -->
+      <div class="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-200 text-xs font-mono text-slate-700">
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">RADAR RAIN RATE</div>
+          <div id="val-rain" class="text-cyan-700 font-black text-sm">0.0 mm/h</div>
+        </div>
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">TOTAL INFLOW Q</div>
+          <div id="val-qinflow" class="text-blue-700 font-black text-sm">2.4 m³/s</div>
+        </div>
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">PIPE MANNING Q</div>
+          <div id="val-pipe-manning" class="text-purple-700 font-black text-sm">2.4 m³/s</div>
+        </div>
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+          <div class="text-slate-500 text-[10px] font-bold">MANHOLE SURCHARGE</div>
+          <div id="val-manhole" class="text-amber-700 font-black text-sm">0.0 m³/s</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MULTI-TRACK SYNCHRONIZED TIME-SERIES TELEMETRY PLOT -->
+  <!-- ========================================================= -->
+  <div class="bg-white border border-slate-200/90 rounded-2xl p-4 mb-3.5 shadow-md">
+    <div class="flex justify-between items-center mb-2 font-mono text-xs flex-wrap gap-2">
+      <div class="flex items-center gap-4 flex-wrap">
+        <span class="font-bold text-slate-700 uppercase tracking-wider">Synchronized 36-Hour Telemetry Tracks:</span>
+        <span class="flex items-center gap-1.5 text-sky-700 font-bold"><span class="w-3 h-3 rounded bg-sky-500"></span> Rain (mm/h)</span>
+        <span class="flex items-center gap-1.5 text-amber-700 font-bold"><span class="w-3 h-1.5 bg-amber-500"></span> CRNS &theta;</span>
+        <span class="flex items-center gap-1.5 text-emerald-700 font-bold"><span class="w-3 h-1.5 bg-emerald-500"></span> Slope FS</span>
+        <span class="flex items-center gap-1.5 text-blue-700 font-bold"><span class="w-3 h-1.5 bg-blue-600"></span> Catchment Q</span>
+        <span class="flex items-center gap-1.5 text-purple-700 font-bold"><span class="w-3 h-1.5 bg-purple-600"></span> Street Depth (cm)</span>
+      </div>
+      <div class="text-slate-500 font-medium">
+        Current Playhead: <span id="lbl-cursor-time" class="text-blue-700 font-black">0.0h</span>
+      </div>
+    </div>
+
+    <!-- Chart Canvas (Crisp White with clear Grid) -->
+    <div class="relative bg-white rounded-xl p-1 border border-slate-200 h-[195px] shadow-sm">
+      <canvas id="canvas-chart" width="1150" height="195" class="w-full h-full"></canvas>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- LIVE SYSTEM LOG & CAP BROADCAST AUDIT STREAM -->
+  <!-- ========================================================= -->
+  <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-md text-xs font-mono">
+    <div class="flex justify-between items-center mb-2 text-slate-500 border-b border-slate-200 pb-1.5">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+        <span class="font-bold uppercase text-slate-800">VARUNA-NET Telemetry Stream &amp; CAP Emergency Log</span>
+      </div>
+      <span class="text-[11px] text-slate-400">3GPP Rel-17 NTN &amp; TV White Space Mesh Active</span>
+    </div>
+    <div id="log-container" class="h-20 overflow-y-auto space-y-1.5 text-slate-700 pr-2 custom-scrollbar">
+      <div class="text-slate-400">[00:00:00] Geohazard Simulation Lab initialized. Physics engine loaded with Western Ghats Laterite profile.</div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ABOUT ARCHITECTURE MODAL -->
+  <!-- ========================================================= -->
+  <div id="modal-about" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-300 rounded-3xl max-w-xl w-full p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-lg">VN</div>
+          <div>
+            <h3 class="font-black text-lg text-slate-900">Project VARUNA-NET 2.0</h3>
+            <p class="text-xs text-blue-600 font-mono">Ground–Space–Edge Multi-Hazard Fusion Grid</p>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="text-slate-400 hover:text-slate-800 text-2xl font-bold">&times;</button>
+      </div>
+      <div class="text-xs text-slate-600 space-y-2.5 font-sans leading-relaxed">
+        <p>
+          <b>Project Overview:</b> An integrated hydro-meteorological early warning architecture designed for
+          mountainous and metro catchments. It bridges the gap between mesoscale soil moisture sensing and street-level pluvial flood nowcasting.
+        </p>
+        <p>
+          <b>Real-Life Physics Engines Integrated:</b>
+        </p>
+        <ul class="list-disc pl-5 space-y-1 font-mono text-[11px] text-slate-700">
+          <li><b>1D Green-Ampt Infiltration:</b> Solves wetting front velocity and cumulative infiltration into regolith.</li>
+          <li><b>Mohr-Coulomb Limit Equilibrium:</b> Dynamically calculates effective stress &sigma;' = &sigma; - u with pore pressure build-up.</li>
+          <li><b>Manning Hydraulic Conduit Solver:</b> Evaluates open-channel and pressurized pipe surcharge for circular conduits.</li>
+          <li><b>Multi-Tier CAP Protocol:</b> Generates automated Tier A (Watch) through Tier D (Red Alert) disaster dispatches.</li>
+        </ul>
+        <p class="pt-2 text-slate-400 text-[11px] border-t border-slate-200">
+          Developed for disaster risk reduction in alignment with NDMA, CWC, and IMD early warning guidelines.
+        </p>
+      </div>
+      <div class="mt-5 flex justify-end">
+        <button id="btn-modal-ok" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow">
+          Close Specification
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JAVASCRIPT SIMULATION & REAL-LIFE PHYSICS ENGINE -->
+  <!-- ========================================================= -->
+  <script>
+    // Global Simulation State
+    let simTime = 0.0;
+    let isPlaying = false;
+    let simSpeed = 1.0;
+    let animFrameId = null;
+
+    // Soil Database (Real-life geotechnical constants with bright earth colors)
+    const SOIL_TYPES = {
+      laterite: {
+        name: "Western Ghats Laterite",
+        c: 8.0, phi: 29.0, ks: 6.5, psi: 160.0, rho: 1.65, thetaSat: 0.46,
+        colorDry: [194, 95, 42], colorSat: [120, 53, 15]
+      },
+      colluvium: {
+        name: "Himalayan Colluvium Silt",
+        c: 4.0, phi: 33.0, ks: 18.0, psi: 110.0, rho: 1.75, thetaSat: 0.44,
+        colorDry: [202, 160, 115], colorSat: [130, 95, 60]
+      },
+      clay: {
+        name: "Silty Clay Basin",
+        c: 14.0, phi: 22.0, ks: 1.5, psi: 280.0, rho: 1.55, thetaSat: 0.49,
+        colorDry: [168, 128, 105], colorSat: [90, 60, 50]
+      },
+      sand: {
+        name: "Permeable Sandy Loam",
+        c: 2.0, phi: 36.0, ks: 42.0, psi: 50.0, rho: 1.80, thetaSat: 0.40,
+        colorDry: [225, 180, 100], colorSat: [155, 110, 50]
+      }
+    };
+
+    let activeSoil = SOIL_TYPES.laterite;
+    let paramSlopeDeg = 34.0;
+    let paramRainPeak = 65.0;
+    let paramTheta0 = 0.18;
+    let paramPipeDia = 1.8; // meters
+
+    const TOTAL_HOURS = 36;
+    const TIME_STEPS = 360;
+    let timelineData = [];
+
+    // Canvas Elements
+    const cSlope = document.getElementById('canvas-slope');
+    const ctxSlope = cSlope.getContext('2d');
+    const cUrban = document.getElementById('canvas-urban');
+    const ctxUrban = cUrban.getContext('2d');
+    const cChart = document.getElementById('canvas-chart');
+    const ctxChart = cChart.getContext('2d');
+
+    // DOM Controls
+    const btnPlay = document.getElementById('btn-play');
+    const txtPlay = document.getElementById('txt-play');
+    const btnReset = document.getElementById('btn-reset');
+    const sliderTime = document.getElementById('slider-time');
+    const lblTime = document.getElementById('lbl-time');
+    const lblCursorTime = document.getElementById('lbl-cursor-time');
+
+    const selSoil = document.getElementById('sel-soil');
+    const sliderSlope = document.getElementById('slider-slope');
+    const lblSlope = document.getElementById('lbl-slope');
+    const sliderRainPeak = document.getElementById('slider-rainpeak');
+    const lblRainPeak = document.getElementById('lbl-rainpeak');
+    const sliderTheta0 = document.getElementById('slider-theta0');
+    const lblTheta0 = document.getElementById('lbl-theta0');
+    const sliderDia = document.getElementById('slider-dia');
+    const lblDia = document.getElementById('lbl-dia');
+
+    const bannerAlert = document.getElementById('banner-alert');
+    const badgeAlert = document.getElementById('badge-alert');
+    const descAlert = document.getElementById('desc-alert');
+    const actionAlert = document.getElementById('action-alert');
+
+    const valFs = document.getElementById('val-fs');
+    const badgeFs = document.getElementById('badge-fs');
+    const overlayLandslide = document.getElementById('overlay-landslide');
+    const valTheta = document.getElementById('val-theta');
+    const valWetting = document.getElementById('val-wetting');
+    const valPore = document.getElementById('val-pore');
+    const valTauRes = document.getElementById('val-tau-res');
+
+    const valDepth = document.getElementById('val-depth');
+    const badgeStreet = document.getElementById('badge-street');
+    const overlayFlood = document.getElementById('overlay-flood');
+    const valRain = document.getElementById('val-rain');
+    const valQInflow = document.getElementById('val-qinflow');
+    const valPipeManning = document.getElementById('val-pipe-manning');
+    const valManhole = document.getElementById('val-manhole');
+
+    const teleFlux = document.getElementById('tele-flux');
+    const logContainer = document.getElementById('log-container');
+
+    // Virtual Piezometer Tooltip Elements
+    const tooltipMohr = document.getElementById('tooltip-mohr');
+    const mohrZ = document.getElementById('mohr-z');
+    const mohrSigmaTot = document.getElementById('mohr-sigmatot');
+    const mohrU = document.getElementById('mohr-u');
+    const mohrSigmaEff = document.getElementById('mohr-sigmaeff');
+    const mohrFs = document.getElementById('mohr-fs');
+
+    // =========================================================
+    // REAL-LIFE PHYSICS TIMELINE SOLVER
+    // =========================================================
+    function recalculateTimeline() {
+      timelineData = [];
+      const betaRad = (paramSlopeDeg * Math.PI) / 180;
+      const phiRad = (activeSoil.phi * Math.PI) / 180;
+      const zDepth = 1.8;
+      const gammaW = 9.81;
+      const gammaDry = activeSoil.rho * 9.81;
+
+      // Manning Pipe Full Capacity calculation:
+      // Q = (1/n) * A * R^(2/3) * S^(1/2)
+      const nRoughness = 0.013;
+      const pipeSlope = 0.005;
+      const pipeArea = Math.PI * Math.pow(paramPipeDia / 2, 2);
+      const wettedPerim = Math.PI * paramPipeDia;
+      const rHydraulic = pipeArea / wettedPerim;
+      const pipeQCap = (1.0 / nRoughness) * pipeArea * Math.pow(rHydraulic, 2/3) * Math.sqrt(pipeSlope);
+      lblDia.innerText = `${paramPipeDia.toFixed(1)} m (${pipeQCap.toFixed(1)} m³/s)`;
+
+      let cumInfiltrationMm = 0.0;
+      let cumStreetPonding = 0.0;
+
+      for (let i = 0; i <= TIME_STEPS; i++) {
+        const t = i * 0.1;
+
+        // 1. Convective Cloudburst Rain Profile (mm/h)
+        let rain = 0.0;
+        if (t >= 5.0 && t <= 17.0) {
+          const stormCenter = 9.5;
+          const stormSpread = 2.3;
+          rain = paramRainPeak * Math.exp(-Math.pow(t - stormCenter, 2) / (2 * Math.pow(stormSpread, 2)));
+        }
+
+        // 2. Real Green-Ampt Infiltration Physics:
+        // f(t) = Ks * (1 + (psi * delta_theta) / F)
+        const deltaTheta = Math.max(0.05, activeSoil.thetaSat - paramTheta0);
+        const fPotential = activeSoil.ks * (1.0 + (activeSoil.psi * deltaTheta) / Math.max(5.0, cumInfiltrationMm));
+        const actualInfiltrationRate = Math.min(rain, fPotential);
+        cumInfiltrationMm += actualInfiltrationRate * 0.1;
+
+        // Wetting Front Depth z_w (meters)
+        const wettingDepthM = Math.min(zDepth, (cumInfiltrationMm / 1000) / deltaTheta);
+
+        // Volumetric Soil Moisture theta from infiltration
+        const thetaCurrent = Math.min(activeSoil.thetaSat, paramTheta0 + (wettingDepthM / zDepth) * deltaTheta);
+        const sr = Math.min(1.0, thetaCurrent / activeSoil.thetaSat);
+
+        // 3. Geotechnical Infinite Slope Stability:
+        const gammaBulk = gammaDry + (sr * activeSoil.thetaSat * gammaW);
+        const mSat = Math.max(0.0, (sr - 0.70) / 0.30);
+        const poreWaterU = mSat * gammaW * zDepth * Math.pow(Math.cos(betaRad), 2);
+
+        const sigmaTotal = gammaBulk * zDepth * Math.pow(Math.cos(betaRad), 2);
+        const sigmaEff = Math.max(0.1, sigmaTotal - poreWaterU);
+
+        const tauResisting = activeSoil.c + (sigmaEff * Math.tan(phiRad));
+        const tauDriving = Math.max(0.01, gammaBulk * zDepth * Math.sin(betaRad) * Math.cos(betaRad));
+        const fs = tauResisting / tauDriving;
+
+        // 4. Macro-Catchment Runoff (Dunne Saturation Excess)
+        const surfaceRunoffMm = Math.max(0.0, rain - actualInfiltrationRate);
+        const upstreamCatchmentQ = 2.0 + (surfaceRunoffMm * 24.0 * Math.pow(sr, 2)) / 3.6;
+
+        // 5. Urban Pipe Inflow & Surcharge
+        const urbanDirectQ = (rain * 0.72 * 14.0) / 3.6;
+        const totalInflowQ = urbanDirectQ + (upstreamCatchmentQ * 0.45);
+        const manholeSurchargeQ = Math.max(0.0, totalInflowQ - pipeQCap);
+
+        // 6. Street Ponding Depth (cm)
+        if (manholeSurchargeQ > 0) {
+          cumStreetPonding += (manholeSurchargeQ * 0.16);
+        } else {
+          cumStreetPonding = Math.max(0.0, cumStreetPonding - 0.35);
+        }
+
+        timelineData.push({
+          t, rain, theta: thetaCurrent, wettingDepthM, fs, poreWaterU,
+          tauResisting, tauDriving, sigmaTotal, sigmaEff,
+          upstreamCatchmentQ, totalInflowQ, pipeQCap,
+          manholeSurchargeQ, streetDepth: cumStreetPonding
+        });
+      }
+      renderChart();
+    }
+
+    function getStateAt(t) {
+      const idx = Math.min(TIME_STEPS, Math.max(0, Math.floor(t * 10)));
+      return timelineData[idx] || timelineData[0];
+    }
+
+    // =========================================================
+    // PARTICLES FOR REAL HYDRODYNAMICS & DEBRIS FLOW
+    // =========================================================
+    let fluidParticles = [];
+    for (let p = 0; p < 55; p++) {
+      fluidParticles.push({
+        x: Math.random() * 560,
+        y: Math.random() * 290,
+        vy: 3 + Math.random() * 5,
+        vx: -1.5 + Math.random() * 1.5,
+        size: 1.5
+      });
+    }
+
+    let debrisParticles = [];
+    let slideDistance = 0.0;
+
+    // =========================================================
+    // CANVAS 1: HILLSLOPE GEOTECHNICAL RENDERING (BRIGHT)
+    // =========================================================
+    function renderHillslope(state) {
+      ctxSlope.clearRect(0, 0, 560, 290);
+
+      // Bright Daylight Sky Gradient
+      const skyGrad = ctxSlope.createLinearGradient(0, 0, 0, 160);
+      if (state.rain > 30) {
+        skyGrad.addColorStop(0, '#94a3b8');
+        skyGrad.addColorStop(1, '#cbd5e1');
+      } else if (state.rain > 5) {
+        skyGrad.addColorStop(0, '#60a5fa');
+        skyGrad.addColorStop(1, '#bae6fd');
+      } else {
+        skyGrad.addColorStop(0, '#38bdf8');
+        skyGrad.addColorStop(1, '#e0f2fe');
+      }
+      ctxSlope.fillStyle = skyGrad;
+      ctxSlope.fillRect(0, 0, 560, 290);
+
+      // Rain particles
+      if (state.rain > 1) {
+        ctxSlope.strokeStyle = 'rgba(2, 132, 199, 0.65)';
+        ctxSlope.lineWidth = 1.2;
+        ctxSlope.beginPath();
+        const dropCount = Math.min(50, Math.floor(state.rain * 0.75));
+        for (let i = 0; i < dropCount; i++) {
+          const pt = fluidParticles[i];
+          ctxSlope.moveTo(pt.x, pt.y);
+          ctxSlope.lineTo(pt.x - 2, pt.y + 11);
+          pt.y += pt.vy + state.rain * 0.05;
+          pt.x -= 0.8;
+          if (pt.y > 290) { pt.y = 0; pt.x = Math.random() * 560; }
+        }
+        ctxSlope.stroke();
+      }
+
+      // Slope Geometry
+      const betaRad = (paramSlopeDeg * Math.PI) / 180;
+      const x0 = 15;
+      const y0 = 70;
+      const x1 = 545;
+      const y1 = y0 + Math.tan(betaRad) * (x1 - x0) * 0.36;
+
+      // Bedrock Substratum (Solid Slate Rock)
+      ctxSlope.fillStyle = '#64748b';
+      ctxSlope.beginPath();
+      ctxSlope.moveTo(x0, y1 + 55);
+      ctxSlope.lineTo(x1, y1 + 55);
+      ctxSlope.lineTo(x1, 290);
+      ctxSlope.lineTo(x0, 290);
+      ctxSlope.closePath();
+      ctxSlope.fill();
+      ctxSlope.strokeStyle = '#475569';
+      ctxSlope.lineWidth = 1.5;
+      ctxSlope.stroke();
+
+      // Slip Plane Boundary Line (Vivid Red when failing)
+      ctxSlope.save();
+      if (state.fs < 1.0) {
+        ctxSlope.strokeStyle = '#dc2626';
+        ctxSlope.lineWidth = 3.5;
+        ctxSlope.setLineDash([8, 4]);
+        ctxSlope.shadowColor = '#ef4444';
+        ctxSlope.shadowBlur = 8;
+      } else {
+        ctxSlope.strokeStyle = '#94a3b8';
+        ctxSlope.lineWidth = 2;
+        ctxSlope.setLineDash([4, 4]);
+      }
+      ctxSlope.beginPath();
+      ctxSlope.moveTo(x0, y0 + 50);
+      ctxSlope.lineTo(x1, y1 + 50);
+      ctxSlope.stroke();
+      ctxSlope.restore();
+
+      // Physical Landslide Slip Movement
+      if (state.fs < 1.0) {
+        slideDistance = Math.min(50, slideDistance + 1.2);
+        if (debrisParticles.length < 25) {
+          debrisParticles.push({
+            x: 200 + Math.random() * 200,
+            y: 120 + Math.random() * 60,
+            vx: 1.5 + Math.random() * 2,
+            vy: 1 + Math.random() * 2,
+            radius: 3 + Math.random() * 4
+          });
+        }
+      } else {
+        slideDistance = Math.max(0, slideDistance - 1.0);
+        debrisParticles = [];
+      }
+
+      // Regolith Soil Layer (Bright Earth colors)
+      const sr = Math.min(1.0, state.theta / activeSoil.thetaSat);
+      const cD = activeSoil.colorDry;
+      const cS = activeSoil.colorSat;
+      const rSoil = Math.floor(cD[0] + (cS[0] - cD[0]) * sr);
+      const gSoil = Math.floor(cD[1] + (cS[1] - cD[1]) * sr);
+      const bSoil = Math.floor(cD[2] + (cS[2] - cD[2]) * sr);
+
+      ctxSlope.save();
+      ctxSlope.translate(slideDistance * 0.8, slideDistance * 0.5);
+
+      // Saturated / Dry Topsoil mass
+      ctxSlope.fillStyle = `rgb(${rSoil}, ${gSoil}, ${bSoil})`;
+      ctxSlope.beginPath();
+      ctxSlope.moveTo(x0, y0);
+      ctxSlope.lineTo(x1, y1);
+      ctxSlope.lineTo(x1, y1 + 50);
+      ctxSlope.lineTo(x0, y0 + 50);
+      ctxSlope.closePath();
+      ctxSlope.fill();
+
+      // Green-Ampt Wetting Front visual advance (Vivid Blue percolation)
+      const wettingFrontPx = (state.wettingDepthM / 1.8) * 50;
+      if (wettingFrontPx > 2) {
+        ctxSlope.fillStyle = 'rgba(2, 132, 199, 0.45)';
+        ctxSlope.beginPath();
+        ctxSlope.moveTo(x0, y0 + (50 - wettingFrontPx));
+        ctxSlope.lineTo(x1, y1 + (50 - wettingFrontPx));
+        ctxSlope.lineTo(x1, y1 + 50);
+        ctxSlope.lineTo(x0, y0 + 50);
+        ctxSlope.closePath();
+        ctxSlope.fill();
+
+        ctxSlope.strokeStyle = '#0284c7';
+        ctxSlope.lineWidth = 2;
+        ctxSlope.setLineDash([3, 2]);
+        ctxSlope.beginPath();
+        ctxSlope.moveTo(x0, y0 + (50 - wettingFrontPx));
+        ctxSlope.lineTo(x1, y1 + (50 - wettingFrontPx));
+        ctxSlope.stroke();
+        ctxSlope.setLineDash([]);
+      }
+
+      // Natural Lush Green Hilltop Vegetation
+      ctxSlope.fillStyle = '#22c55e';
+      for (let vx = x0 + 25; vx < x1 - 15; vx += 45) {
+        const vy = y0 + ((vx - x0) / (x1 - x0)) * (y1 - y0);
+        ctxSlope.beginPath();
+        ctxSlope.arc(vx, vy - 7, 8, 0, Math.PI * 2);
+        ctxSlope.fill();
+      }
+
+      ctxSlope.restore();
+
+      // Render Tumbling Debris Stones if Slide Active
+      ctxSlope.fillStyle = '#78350f';
+      for (let i = 0; i < debrisParticles.length; i++) {
+        const dp = debrisParticles[i];
+        ctxSlope.beginPath();
+        ctxSlope.arc(dp.x, dp.y, dp.radius, 0, Math.PI * 2);
+        ctxSlope.fill();
+        dp.x += dp.vx;
+        dp.y += dp.vy;
+      }
+
+      // CRNS Sentinel Station Mast on Slope
+      const mastX = x0 + 75;
+      const mastY = y0 + ((mastX - x0) / (x1 - x0)) * (y1 - y0);
+      ctxSlope.strokeStyle = '#0f172a';
+      ctxSlope.lineWidth = 2.5;
+      ctxSlope.beginPath();
+      ctxSlope.moveTo(mastX, mastY);
+      ctxSlope.lineTo(mastX, mastY - 38);
+      ctxSlope.stroke();
+
+      // CRNS Probe Head (Bright Blue)
+      ctxSlope.fillStyle = '#0284c7';
+      ctxSlope.beginPath();
+      ctxSlope.arc(mastX, mastY - 38, 7, 0, Math.PI * 2);
+      ctxSlope.fill();
+      ctxSlope.strokeStyle = '#ffffff';
+      ctxSlope.lineWidth = 1.5;
+      ctxSlope.stroke();
+
+      // CRNS 150m Mesoscale Sensing Footprint Pulses
+      const pulseR = 20 + (Date.now() % 1600) / 45;
+      ctxSlope.strokeStyle = 'rgba(2, 132, 199, 0.55)';
+      ctxSlope.lineWidth = 2;
+      ctxSlope.beginPath();
+      ctxSlope.arc(mastX, mastY - 38, pulseR, 0, Math.PI * 2);
+      ctxSlope.stroke();
+
+      // Stress Vectors (Mohr-Coulomb Driving vs Resisting)
+      if (state.fs < 1.3) {
+        drawVector(ctxSlope, 270, 185, 315, 210, '#ea580c', 'τd (Driving)');
+        if (state.poreWaterU > 1.5) {
+          drawVector(ctxSlope, 250, 205, 250, 180, '#dc2626', 'u (Pore P)');
+          drawVector(ctxSlope, 280, 220, 280, 195, '#dc2626', '');
+        }
+      }
+    }
+
+    function drawVector(ctx, fromx, fromy, tox, toy, color, label) {
+      const headlen = 8;
+      const dx = tox - fromx;
+      const dy = toy - fromy;
+      const angle = Math.atan2(dy, dx);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(fromx, fromy);
+      ctx.lineTo(tox, toy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(tox, toy);
+      ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+      if (label) {
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = color;
+        ctx.fillText(label, tox + 4, toy - 2);
+      }
+      ctx.restore();
+    }
+
+    // =========================================================
+    // CANVAS 2: URBAN NOWCAST & MANNING PIPE SURCHARGE (BRIGHT)
+    // =========================================================
+    function renderUrban(state) {
+      ctxUrban.clearRect(0, 0, 560, 290);
+
+      // Sky
+      const skyGrad = ctxUrban.createLinearGradient(0, 0, 0, 160);
+      if (state.rain > 30) {
+        skyGrad.addColorStop(0, '#94a3b8');
+        skyGrad.addColorStop(1, '#cbd5e1');
+      } else {
+        skyGrad.addColorStop(0, '#38bdf8');
+        skyGrad.addColorStop(1, '#e0f2fe');
+      }
+      ctxUrban.fillStyle = skyGrad;
+      ctxUrban.fillRect(0, 0, 560, 290);
+
+      // Rain
+      if (state.rain > 1) {
+        ctxUrban.strokeStyle = 'rgba(2, 132, 199, 0.65)';
+        ctxUrban.lineWidth = 1.2;
+        ctxUrban.beginPath();
+        const dropCount = Math.min(50, Math.floor(state.rain * 0.75));
+        for (let i = 0; i < dropCount; i++) {
+          const pt = fluidParticles[i];
+          ctxUrban.moveTo(pt.x, pt.y);
+          ctxUrban.lineTo(pt.x - 1, pt.y + 11);
+        }
+        ctxUrban.stroke();
+      }
+
+      // City Skyline (Vibrant Blue/Slate Architecture)
+      ctxUrban.fillStyle = '#64748b';
+      ctxUrban.fillRect(40, 45, 55, 95);
+      ctxUrban.fillRect(115, 65, 45, 75);
+      ctxUrban.fillRect(380, 50, 60, 90);
+      ctxUrban.fillRect(460, 35, 75, 105);
+
+      // Building Windows (Bright Yellow/Cyan)
+      ctxUrban.fillStyle = '#fef08a';
+      for (let by = 55; by < 130; by += 15) {
+        ctxUrban.fillRect(48, by, 8, 8);
+        ctxUrban.fillRect(65, by, 8, 8);
+      }
+
+      // Street & Underpass Topography
+      ctxUrban.fillStyle = '#475569';
+      ctxUrban.beginPath();
+      ctxUrban.moveTo(0, 145);
+      ctxUrban.lineTo(150, 145);
+      ctxUrban.lineTo(240, 172);
+      ctxUrban.lineTo(340, 172);
+      ctxUrban.lineTo(430, 145);
+      ctxUrban.lineTo(560, 145);
+      ctxUrban.lineTo(560, 290);
+      ctxUrban.lineTo(0, 290);
+      ctxUrban.closePath();
+      ctxUrban.fill();
+
+      // Road Tarmac Lines (Bright Yellow)
+      ctxUrban.strokeStyle = '#fbbf24';
+      ctxUrban.lineWidth = 2.5;
+      ctxUrban.setLineDash([10, 8]);
+      ctxUrban.beginPath();
+      ctxUrban.moveTo(0, 147);
+      ctxUrban.lineTo(150, 147);
+      ctxUrban.lineTo(240, 174);
+      ctxUrban.lineTo(340, 174);
+      ctxUrban.lineTo(430, 147);
+      ctxUrban.lineTo(560, 147);
+      ctxUrban.stroke();
+      ctxUrban.setLineDash([]);
+
+      // Underground Concrete Conduit
+      ctxUrban.fillStyle = '#334155';
+      ctxUrban.fillRect(50, 220, 460, 54);
+      ctxUrban.strokeStyle = '#64748b';
+      ctxUrban.lineWidth = 3;
+      ctxUrban.strokeRect(50, 220, 460, 54);
+
+      // Vertical Manhole Shaft Riser
+      ctxUrban.fillStyle = '#334155';
+      ctxUrban.fillRect(275, 172, 50, 50);
+      ctxUrban.strokeRect(275, 172, 50, 50);
+
+      // Flowing Blue Water inside Stormwater Conduit
+      const pipeFillRatio = Math.min(1.0, state.totalInflowQ / state.pipeQCap);
+      const pipeWaterHeight = pipeFillRatio * 52;
+      ctxUrban.fillStyle = '#0284c7';
+      ctxUrban.fillRect(52, 272 - pipeWaterHeight, 456, pipeWaterHeight);
+
+      // Manhole Lid & Surcharge Jet Fountain
+      if (state.manholeSurchargeQ > 0) {
+        // Blown off lid
+        ctxUrban.fillStyle = '#94a3b8';
+        ctxUrban.save();
+        ctxUrban.translate(295, 160);
+        ctxUrban.rotate(-0.4);
+        ctxUrban.fillRect(-22, -4, 44, 8);
+        ctxUrban.restore();
+
+        // High-Velocity Surcharge Fountain Geyser (Bright Blue)
+        const jetHeight = Math.min(45, state.manholeSurchargeQ * 2.1);
+        ctxUrban.fillStyle = 'rgba(2, 132, 199, 0.85)';
+        ctxUrban.beginPath();
+        ctxUrban.ellipse(300, 172 - jetHeight / 2, 18, jetHeight / 2, 0, 0, Math.PI * 2);
+        ctxUrban.fill();
+      } else {
+        // Closed manhole lid
+        ctxUrban.fillStyle = '#94a3b8';
+        ctxUrban.fillRect(273, 169, 54, 6);
+      }
+
+      // Street Water Inundation in Underpass
+      const pondingPx = Math.min(48, state.streetDepth * 0.72);
+      if (pondingPx > 0.5) {
+        ctxUrban.fillStyle = 'rgba(2, 132, 199, 0.75)';
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(170, 172);
+        ctxUrban.lineTo(410, 172);
+        ctxUrban.lineTo(410, 172 - pondingPx);
+        ctxUrban.lineTo(170, 172 - pondingPx);
+        ctxUrban.closePath();
+        ctxUrban.fill();
+
+        // Wave surface ripple (White/Cyan)
+        ctxUrban.strokeStyle = '#bae6fd';
+        ctxUrban.lineWidth = 2;
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(170, 172 - pondingPx);
+        for (let wx = 170; wx <= 410; wx += 20) {
+          ctxUrban.quadraticCurveTo(wx + 10, 172 - pondingPx - 2, wx + 20, 172 - pondingPx);
+        }
+        ctxUrban.stroke();
+      }
+
+      // Vehicle on Road (Vibrant Red Sports Car)
+      const carX = 220;
+      const carY = 160;
+      ctxUrban.fillStyle = '#ef4444';
+      ctxUrban.fillRect(carX, carY, 34, 12);
+      ctxUrban.fillRect(carX + 6, carY - 8, 20, 8);
+      ctxUrban.fillStyle = '#0f172a';
+      ctxUrban.beginPath();
+      ctxUrban.arc(carX + 8, carY + 12, 4, 0, Math.PI * 2);
+      ctxUrban.arc(carX + 26, carY + 12, 4, 0, Math.PI * 2);
+      ctxUrban.fill();
+
+      // Automated Hydraulic Barricade
+      if (state.streetDepth > 20) {
+        // Red Barrier Dropped
+        ctxUrban.strokeStyle = '#dc2626';
+        ctxUrban.lineWidth = 4;
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(140, 145);
+        ctxUrban.lineTo(140, 118);
+        ctxUrban.stroke();
+        ctxUrban.fillStyle = '#dc2626';
+        ctxUrban.fillRect(140, 124, 80, 5);
+        ctxUrban.fillStyle = '#ffffff';
+        ctxUrban.fillRect(155, 124, 12, 5);
+        ctxUrban.fillRect(185, 124, 12, 5);
+
+        // Flashing Light
+        const flash = (Date.now() % 600) < 300;
+        ctxUrban.fillStyle = flash ? '#ef4444' : '#f87171';
+        ctxUrban.beginPath();
+        ctxUrban.arc(140, 115, 5, 0, Math.PI * 2);
+        ctxUrban.fill();
+      } else {
+        // Green Barrier Open
+        ctxUrban.strokeStyle = '#16a34a';
+        ctxUrban.lineWidth = 4;
+        ctxUrban.beginPath();
+        ctxUrban.moveTo(140, 145);
+        ctxUrban.lineTo(140, 105);
+        ctxUrban.stroke();
+      }
+    }
+
+    // =========================================================
+    // CHART: 5-TRACK TELEMETRY RENDERER (CRISP WHITE / VIBRANT)
+    // =========================================================
+    function renderChart() {
+      ctxChart.clearRect(0, 0, 1150, 195);
+
+      const w = 1150;
+      const h = 195;
+      const padLeft = 45;
+      const padRight = 20;
+      const padTop = 15;
+      const padBottom = 25;
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+
+      // Axes & Grid lines (Light grey)
+      ctxChart.strokeStyle = '#e2e8f0';
+      ctxChart.lineWidth = 1;
+      ctxChart.beginPath();
+      ctxChart.moveTo(padLeft, padTop);
+      ctxChart.lineTo(padLeft, h - padBottom);
+      ctxChart.lineTo(w - padRight, h - padBottom);
+      ctxChart.stroke();
+
+      // Time Markers (every 6 hours)
+      ctxChart.fillStyle = '#64748b';
+      ctxChart.font = 'bold 10px monospace';
+      for (let hr = 0; hr <= 36; hr += 6) {
+        const x = padLeft + (hr / 36) * plotW;
+        ctxChart.fillText(`${hr}h`, x - 8, h - padBottom + 16);
+        ctxChart.strokeStyle = '#f1f5f9';
+        ctxChart.beginPath();
+        ctxChart.moveTo(x, padTop);
+        ctxChart.lineTo(x, h - padBottom);
+        ctxChart.stroke();
+      }
+
+      // Track 1: Rainfall (Bright Sky Blue bars)
+      const maxRain = 120;
+      ctxChart.fillStyle = 'rgba(14, 165, 233, 0.4)';
+      for (let i = 0; i < timelineData.length; i += 2) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const barH = (d.rain / maxRain) * plotH;
+        ctxChart.fillRect(x, h - padBottom - barH, 4, barH);
+      }
+
+      // Track 2: CRNS Soil Moisture theta (Vibrant Amber)
+      ctxChart.strokeStyle = '#f59e0b';
+      ctxChart.lineWidth = 2.5;
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - ((d.theta - 0.08) / 0.42) * plotH;
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 3: Slope FS (Vibrant Emerald / Red if < 1.0)
+      ctxChart.strokeStyle = '#10b981';
+      ctxChart.lineWidth = 3;
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, ((d.fs - 0.5) / 1.5) * plotH);
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 4: Catchment Q (Royal Blue)
+      ctxChart.strokeStyle = '#2563eb';
+      ctxChart.lineWidth = 2;
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, (d.totalInflowQ / 140) * plotH);
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 5: Street Inundation Depth (Purple)
+      ctxChart.strokeStyle = '#9333ea';
+      ctxChart.lineWidth = 2.5;
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, (d.streetDepth / 70) * plotH);
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Critical FS = 1.0 Line (Red Dashed)
+      const yFsCrit = h - padBottom - ((1.0 - 0.5) / 1.5) * plotH;
+      ctxChart.strokeStyle = '#ef4444';
+      ctxChart.lineWidth = 2;
+      ctxChart.setLineDash([5, 4]);
+      ctxChart.beginPath();
+      ctxChart.moveTo(padLeft, yFsCrit);
+      ctxChart.lineTo(w - padRight, yFsCrit);
+      ctxChart.stroke();
+      ctxChart.fillStyle = '#dc2626';
+      ctxChart.font = 'bold 10px monospace';
+      ctxChart.fillText('CRITICAL FS = 1.0 (SLOPE FAILURE)', w - padRight - 210, yFsCrit - 5);
+      ctxChart.setLineDash([]);
+
+      // Current Time Cursor (Bright Blue Line with Circle)
+      const cursorX = padLeft + (simTime / 36) * plotW;
+      ctxChart.strokeStyle = '#1d4ed8';
+      ctxChart.lineWidth = 2.5;
+      ctxChart.beginPath();
+      ctxChart.moveTo(cursorX, padTop);
+      ctxChart.lineTo(cursorX, h - padBottom);
+      ctxChart.stroke();
+
+      ctxChart.fillStyle = '#1d4ed8';
+      ctxChart.beginPath();
+      ctxChart.arc(cursorX, padTop, 5, 0, Math.PI * 2);
+      ctxChart.fill();
+    }
+
+    // =========================================================
+    // MAIN UPDATE CYCLE & ALERT GENERATOR
+    // =========================================================
+    let lastAlertTier = 'A';
+
+    function updateSimulation() {
+      const state = getStateAt(simTime);
+
+      lblTime.innerText = `${simTime.toFixed(1)}h`;
+      lblCursorTime.innerText = `${simTime.toFixed(1)}h`;
+      sliderTime.value = simTime;
+
+      // Telemetry Flux
+      const neutronCount = Math.floor(1060 - state.theta * 1150);
+      teleFlux.innerText = `${neutronCount} cph`;
+
+      // Hillslope Readouts
+      valFs.innerText = state.fs.toFixed(2);
+      valTheta.innerText = `${state.theta.toFixed(3)} m³/m³`;
+      valWetting.innerText = `${state.wettingDepthM.toFixed(2)} m`;
+      valPore.innerText = `${state.poreWaterU.toFixed(1)} kPa`;
+      valTauRes.innerText = `${state.tauResisting.toFixed(1)} kPa`;
+
+      if (state.fs < 1.0) {
+        valFs.className = 'text-red-600 font-black text-base animate-pulse';
+        badgeFs.innerText = 'COLLAPSE';
+        badgeFs.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-red-100 text-red-800 border border-red-300 shadow-sm';
+        overlayLandslide.classList.remove('hidden');
+      } else if (state.fs < 1.25) {
+        valFs.className = 'text-amber-600 font-black text-base';
+        badgeFs.innerText = 'WARNING';
+        badgeFs.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-amber-100 text-amber-800 border border-amber-300 shadow-sm';
+        overlayLandslide.classList.add('hidden');
+      } else {
+        valFs.className = 'text-emerald-700 font-black text-base';
+        badgeFs.innerText = 'STABLE';
+        badgeFs.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm';
+        overlayLandslide.classList.add('hidden');
+      }
+
+      // Urban Readouts
+      valRain.innerText = `${state.rain.toFixed(1)} mm/h`;
+      valQInflow.innerText = `${state.totalInflowQ.toFixed(1)} m³/s`;
+      valPipeManning.innerText = `${Math.min(state.pipeQCap, state.totalInflowQ).toFixed(1)} m³/s`;
+      valManhole.innerText = `${state.manholeSurchargeQ.toFixed(1)} m³/s`;
+      valDepth.innerText = `${state.streetDepth.toFixed(1)} cm`;
+
+      if (state.streetDepth > 45.0) {
+        valDepth.className = 'text-red-600 font-black text-base animate-pulse';
+        badgeStreet.innerText = 'SUBMERGED';
+        badgeStreet.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-red-100 text-red-800 border border-red-300 shadow-sm';
+        overlayFlood.classList.remove('hidden');
+      } else if (state.streetDepth > 20.0) {
+        valDepth.className = 'text-amber-600 font-black text-base';
+        badgeStreet.innerText = 'BARRICADED';
+        badgeStreet.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-amber-100 text-amber-800 border border-amber-300 shadow-sm';
+        overlayFlood.classList.add('hidden');
+      } else if (state.streetDepth > 5.0) {
+        valDepth.className = 'text-blue-700 font-black text-base';
+        badgeStreet.innerText = 'PONDING';
+        badgeStreet.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-blue-100 text-blue-800 border border-blue-300 shadow-sm';
+        overlayFlood.classList.add('hidden');
+      } else {
+        valDepth.className = 'text-emerald-700 font-black text-base';
+        badgeStreet.innerText = 'CLEAR';
+        badgeStreet.className = 'text-xs px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm';
+        overlayFlood.classList.add('hidden');
+      }
+
+      // Multi-Tier Alert Determination
+      let currentTier = 'A';
+      if (state.fs <= 1.00 || state.streetDepth >= 45.0) {
+        currentTier = 'D';
+      } else if (state.streetDepth >= 20.0 || state.fs <= 1.10) {
+        currentTier = 'C';
+      } else if (state.streetDepth >= 5.0 || state.fs <= 1.30 || state.theta >= 0.38) {
+        currentTier = 'B';
+      } else {
+        currentTier = 'A';
+      }
+
+      if (currentTier !== lastAlertTier) {
+        updateAlertBanner(currentTier, state);
+        lastAlertTier = currentTier;
+      }
+
+      // Render Visualizations
+      renderHillslope(state);
+      renderUrban(state);
+      renderChart();
+    }
+
+    function updateAlertBanner(tier, state) {
+      if (tier === 'D') {
+        bannerAlert.className = 'bg-red-50 border-2 border-red-500 text-red-900 px-4 py-2.5 rounded-2xl mb-3.5 flex items-center justify-between shadow-md animate-pulse';
+        badgeAlert.className = 'bg-red-600 text-white font-black text-xs px-3 py-1 rounded-lg uppercase tracking-wide';
+        badgeAlert.innerText = 'TIER D : EXTREME / RED ALERT';
+        descAlert.innerText = 'EMERGENCY: Hillslope FS < 1.00 (Failure Imminent) OR Street Submersion > 45 cm. Automatic Siren Dispatched.';
+        actionAlert.className = 'text-xs font-bold text-red-900 font-mono uppercase bg-red-100 px-3 py-1 rounded-lg border border-red-300';
+        actionAlert.innerText = 'FULL NDRF ESCALATION & NTN SAT BROADCAST';
+        logEvent(`[${formatSimTime(simTime)}] TIER D EXTREME ALERT: Hillslope FS=${state.fs.toFixed(2)} (<1.0) & Street Depth=${state.streetDepth.toFixed(1)}cm. 3GPP Rel-17 NTN broadcast active!`);
+      } else if (tier === 'C') {
+        bannerAlert.className = 'bg-amber-50 border-2 border-amber-400 text-amber-900 px-4 py-2.5 rounded-2xl mb-3.5 flex items-center justify-between shadow-sm';
+        badgeAlert.className = 'bg-amber-600 text-white font-black text-xs px-3 py-1 rounded-lg uppercase tracking-wide';
+        badgeAlert.innerText = 'TIER C : NOWCAST URBAN ALERT';
+        descAlert.innerText = 'Urban PINN predicts street ponding > 20 cm. Automated hydraulic barricades deployed at low-lying underpasses.';
+        actionAlert.className = 'text-xs font-bold text-amber-900 font-mono uppercase bg-amber-100 px-3 py-1 rounded-lg border border-amber-300';
+        actionAlert.innerText = 'DEPLOY TRAFFIC BARRICADES & CELL PUSH';
+        logEvent(`[${formatSimTime(simTime)}] TIER C NOWCAST ALERT: Urban PINN predicts 20cm+ street flooding. Barricades deployed.`);
+      } else if (tier === 'B') {
+        bannerAlert.className = 'bg-yellow-50 border-2 border-yellow-400 text-yellow-900 px-4 py-2.5 rounded-2xl mb-3.5 flex items-center justify-between shadow-sm';
+        badgeAlert.className = 'bg-yellow-600 text-white font-black text-xs px-3 py-1 rounded-lg uppercase tracking-wide';
+        badgeAlert.innerText = 'TIER B : ADVISORY / WARNING';
+        descAlert.innerText = 'CRNS antecedent saturation > 75%. NISAR SAR flood polygons cross-referenced. Catchment storage exhausted.';
+        actionAlert.className = 'text-xs font-bold text-yellow-900 font-mono uppercase bg-yellow-100 px-3 py-1 rounded-lg border border-yellow-300';
+        actionAlert.innerText = 'PRE-POSITION DEWATERING PUMPS';
+        logEvent(`[${formatSimTime(simTime)}] TIER B WARNING: CRNS saturation > 75%, pore-pressure rising. Pre-position pumps.`);
+      } else {
+        bannerAlert.className = 'bg-emerald-50 border-2 border-emerald-400 text-emerald-900 px-4 py-2.5 rounded-2xl mb-3.5 flex items-center justify-between shadow-sm';
+        badgeAlert.className = 'bg-emerald-600 text-white font-black text-xs px-3 py-1 rounded-lg tracking-wide uppercase';
+        badgeAlert.innerText = 'TIER A : NORMAL / WATCH';
+        descAlert.innerText = 'Soil matric suction active. Factor of Safety FS > 1.50. Urban storm drains flowing smoothly at safe capacity.';
+        actionAlert.className = 'text-xs font-bold text-emerald-800 font-mono uppercase bg-emerald-100 px-3 py-1 rounded-lg border border-emerald-300';
+        actionAlert.innerText = 'ROUTINE TELEMETRY POLLING (1h)';
+      }
+    }
+
+    function formatSimTime(h) {
+      const hours = Math.floor(h);
+      const mins = Math.floor((h - hours) * 60);
+      return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:00`;
+    }
+
+    function logEvent(msg) {
+      const div = document.createElement('div');
+      div.innerText = msg;
+      logContainer.prepend(div);
+    }
+
+    // =========================================================
+    // INTERACTIVE STRESS INSPECTION (MOHR CIRCLE TOOLTIP)
+    // =========================================================
+    cSlope.addEventListener('click', (e) => {
+      const rect = cSlope.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (clickX >= 20 && clickX <= 540 && clickY >= 70 && clickY <= 260) {
+        const state = getStateAt(simTime);
+        const zFraction = Math.min(1.8, Math.max(0.3, ((clickY - 70) / 120) * 1.8));
+
+        mohrZ.innerText = `${zFraction.toFixed(2)} m`;
+        const sigmaTot = (state.sigmaTotal * (zFraction / 1.8)).toFixed(1);
+        const uVal = (state.poreWaterU * (zFraction / 1.8)).toFixed(1);
+        const sigmaEff = Math.max(0.1, sigmaTot - uVal).toFixed(1);
+
+        mohrSigmaTot.innerText = `${sigmaTot} kPa`;
+        mohrU.innerText = `${uVal} kPa`;
+        mohrSigmaEff.innerText = `${sigmaEff} kPa`;
+        mohrFs.innerText = state.fs.toFixed(2);
+
+        tooltipMohr.classList.remove('hidden');
+        setTimeout(() => tooltipMohr.classList.add('hidden'), 5000);
+      }
+    });
+
+    // =========================================================
+    // CSV TELEMETRY EXPORT
+    // =========================================================
+    document.getElementById('btn-export').addEventListener('click', () => {
+      let csv = "Time_h,Rain_mm_h,CRNS_theta,WettingFront_m,Slope_FS,PorePressure_kPa,TotalInflow_m3_s,StreetDepth_cm\n";
+      for (const d of timelineData) {
+        csv += `${d.t.toFixed(1)},${d.rain.toFixed(1)},${d.theta.toFixed(3)},${d.wettingDepthM.toFixed(2)},${d.fs.toFixed(2)},${d.poreWaterU.toFixed(1)},${d.totalInflowQ.toFixed(1)},${d.streetDepth.toFixed(1)}\n`;
+      }
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `VarunaNet_Telemetry_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      logEvent('[EXPORT] Telemetry dataset exported to CSV successfully.');
+    });
+
+    // =========================================================
+    // ABOUT MODAL HANDLERS
+    // =========================================================
+    const modalAbout = document.getElementById('modal-about');
+    document.getElementById('btn-about').addEventListener('click', () => modalAbout.classList.remove('hidden'));
+    document.getElementById('btn-close-modal').addEventListener('click', () => modalAbout.classList.add('hidden'));
+    document.getElementById('btn-modal-ok').addEventListener('click', () => modalAbout.classList.add('hidden'));
+
+    // =========================================================
+    // ANIMATION LOOP & CONTROLS
+    // =========================================================
+    let lastTimestamp = null;
+    function loop(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = (timestamp - lastTimestamp) / 1000;
+      lastTimestamp = timestamp;
+
+      if (isPlaying) {
+        simTime += dt * 0.8 * simSpeed;
+        if (simTime >= TOTAL_HOURS) {
+          simTime = 0.0;
+        }
+      }
+
+      updateSimulation();
+      animFrameId = requestAnimationFrame(loop);
+    }
+
+    btnPlay.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      txtPlay.innerText = isPlaying ? 'Pause Simulation' : 'Run Simulation';
+      document.getElementById('icon-play').innerHTML = isPlaying
+        ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+        : '<path d="M8 5v14l11-7z"/>';
+    });
+
+    btnReset.addEventListener('click', () => {
+      simTime = 0.0;
+      isPlaying = false;
+      txtPlay.innerText = 'Run Simulation';
+      document.getElementById('icon-play').innerHTML = '<path d="M8 5v14l11-7z"/>';
+      slideDistance = 0.0;
+      debrisParticles = [];
+      updateSimulation();
+    });
+
+    sliderTime.addEventListener('input', (e) => {
+      simTime = parseFloat(e.target.value);
+      updateSimulation();
+    });
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => {
+          b.className = 'speed-btn px-1.5 py-0.5 rounded text-slate-600 hover:text-slate-900';
+        });
+        btn.className = 'speed-btn px-1.5 py-0.5 rounded text-white font-bold bg-blue-600 shadow-sm';
+        simSpeed = parseFloat(btn.dataset.speed);
+      });
+    });
+
+    // Soil Selector
+    selSoil.addEventListener('change', (e) => {
+      activeSoil = SOIL_TYPES[e.target.value];
+      logEvent(`[PHYSICS] Regolith profile changed to: ${activeSoil.name} (c'=${activeSoil.c}kPa, φ'=${activeSoil.phi}°, Ks=${activeSoil.ks}mm/h).`);
+      recalculateTimeline();
+      updateSimulation();
+    });
+
+    // Sliders
+    sliderSlope.addEventListener('input', (e) => {
+      paramSlopeDeg = parseFloat(e.target.value);
+      lblSlope.innerText = `${paramSlopeDeg.toFixed(1)}°`;
+      recalculateTimeline();
+      updateSimulation();
+    });
+
+    sliderRainPeak.addEventListener('input', (e) => {
+      paramRainPeak = parseFloat(e.target.value);
+      lblRainPeak.innerText = `${paramRainPeak} mm/h`;
+      recalculateTimeline();
+      updateSimulation();
+    });
+
+    sliderTheta0.addEventListener('input', (e) => {
+      paramTheta0 = parseFloat(e.target.value);
+      lblTheta0.innerText = `${paramTheta0.toFixed(2)} m³/m³`;
+      recalculateTimeline();
+      updateSimulation();
+    });
+
+    sliderDia.addEventListener('input', (e) => {
+      paramPipeDia = parseFloat(e.target.value);
+      recalculateTimeline();
+      updateSimulation();
+    });
+
+    // Disaster Presets
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = btn.dataset.preset;
+        if (p === 'mumbai') {
+          activeSoil = SOIL_TYPES.clay;
+          selSoil.value = 'clay';
+          paramTheta0 = 0.22;
+          paramSlopeDeg = 24.0;
+          paramRainPeak = 95.0;
+          paramPipeDia = 1.6;
+          logEvent('[PRESET] Loaded: Mumbai Convective Cloudburst (Rapid Pluvial Inundation).');
+        } else if (p === 'wayanad') {
+          activeSoil = SOIL_TYPES.laterite;
+          selSoil.value = 'laterite';
+          paramTheta0 = 0.38;
+          paramSlopeDeg = 38.0;
+          paramRainPeak = 75.0;
+          paramPipeDia = 2.2;
+          logEvent('[PRESET] Loaded: Wayanad Hillslope Disaster (Severe Soil Saturation & Landslide Liquefaction).');
+        } else if (p === 'dry') {
+          activeSoil = SOIL_TYPES.sand;
+          selSoil.value = 'sand';
+          paramTheta0 = 0.10;
+          paramSlopeDeg = 28.0;
+          paramRainPeak = 45.0;
+          paramPipeDia = 2.0;
+          logEvent('[PRESET] Loaded: Dry Soil Absorption Test (False-Alarm Rejection).');
+        }
+
+        sliderSlope.value = paramSlopeDeg;
+        lblSlope.innerText = `${paramSlopeDeg.toFixed(1)}°`;
+        sliderRainPeak.value = paramRainPeak;
+        lblRainPeak.innerText = `${paramRainPeak} mm/h`;
+        sliderTheta0.value = paramTheta0;
+        lblTheta0.innerText = `${paramTheta0.toFixed(2)} m³/m³`;
+        sliderDia.value = paramPipeDia;
+
+        recalculateTimeline();
+        simTime = 0.0;
+        updateSimulation();
+      });
+    });
+
+    // Initialization
+    recalculateTimeline();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
