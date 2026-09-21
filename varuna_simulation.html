@@ -469,16 +469,24 @@
   <div class="bg-white border border-slate-200/90 rounded-2xl p-4 mb-3.5 shadow-md">
     <div class="flex justify-between items-center mb-2 font-mono text-xs flex-wrap gap-2">
       <div class="flex items-center gap-4 flex-wrap">
-        <span class="font-bold text-slate-700 uppercase tracking-wider">Synchronized 36-Hour Telemetry Tracks:</span>
-        <span class="flex items-center gap-1.5 text-sky-700 font-bold"><span class="w-3 h-3 rounded bg-sky-500"></span> Rain (mm/h)</span>
-        <span class="flex items-center gap-1.5 text-cyan-700 font-bold"><span class="w-3 h-1.5 bg-cyan-500"></span> Tide (m)</span>
-        <span class="flex items-center gap-1.5 text-amber-700 font-bold"><span class="w-3 h-1.5 bg-amber-500"></span> CRNS &theta;</span>
-        <span class="flex items-center gap-1.5 text-emerald-700 font-bold"><span class="w-3 h-1.5 bg-emerald-500"></span> Slope FS</span>
-        <span class="flex items-center gap-1.5 text-blue-700 font-bold"><span class="w-3 h-1.5 bg-blue-600"></span> Catchment Q</span>
-        <span class="flex items-center gap-1.5 text-purple-700 font-bold"><span class="w-3 h-1.5 bg-purple-600"></span> Street Depth (cm)</span>
+        <span class="font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+          Live Real-Time Telemetry Stream:
+        </span>
+        <span class="flex items-center gap-1 text-sky-700 font-bold"><span class="w-2.5 h-2.5 rounded bg-sky-500"></span> Rain: <span id="chart-live-rain" class="font-mono">0</span> mm/h</span>
+        <span class="flex items-center gap-1 text-cyan-700 font-bold"><span class="w-2.5 h-1 bg-cyan-500"></span> Tide: <span id="chart-live-tide" class="font-mono">2.5</span> m</span>
+        <span class="flex items-center gap-1 text-amber-700 font-bold"><span class="w-2.5 h-1 bg-amber-500"></span> &theta;: <span id="chart-live-theta" class="font-mono">12.0</span>%</span>
+        <span class="flex items-center gap-1 text-emerald-700 font-bold"><span class="w-2.5 h-1 bg-emerald-500"></span> FS: <span id="chart-live-fs" class="font-mono">2.10</span></span>
+        <span class="flex items-center gap-1 text-blue-700 font-bold"><span class="w-2.5 h-1 bg-blue-600"></span> Catchment Q: <span id="chart-live-q" class="font-mono">2.0</span> m³/s</span>
+        <span class="flex items-center gap-1 text-purple-700 font-bold"><span class="w-2.5 h-1 bg-purple-600"></span> Street: <span id="chart-live-street" class="font-mono">0</span> cm</span>
       </div>
-      <div class="text-slate-500 font-medium">
-        Current Playhead: <span id="lbl-cursor-time" class="text-blue-700 font-black">0.0h</span>
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-300 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVE STREAM
+        </span>
+        <div class="text-slate-500 font-medium">
+          Playhead: <span id="lbl-cursor-time" class="text-blue-700 font-black">0.0h</span>
+        </div>
       </div>
     </div>
 
@@ -676,6 +684,14 @@
     const mohrU = document.getElementById('mohr-u');
     const mohrSigmaEff = document.getElementById('mohr-sigmaeff');
     const mohrFs = document.getElementById('mohr-fs');
+
+    // Chart Live Readout Elements
+    const chartLiveRain = document.getElementById('chart-live-rain');
+    const chartLiveTide = document.getElementById('chart-live-tide');
+    const chartLiveTheta = document.getElementById('chart-live-theta');
+    const chartLiveFs = document.getElementById('chart-live-fs');
+    const chartLiveQ = document.getElementById('chart-live-q');
+    const chartLiveStreet = document.getElementById('chart-live-street');
 
     // =========================================================
     // REAL-LIFE PHYSICS TIMELINE SOLVER
@@ -1354,7 +1370,7 @@
     }
 
     // =========================================================
-    // CHART: 5-TRACK TELEMETRY RENDERER (CRISP WHITE / VIBRANT)
+    // CHART: DYNAMIC REAL-TIME TELEMETRY STREAMING ENGINE
     // =========================================================
     function renderChart() {
       ctxChart.clearRect(0, 0, 1150, 195);
@@ -1368,7 +1384,13 @@
       const plotW = w - padLeft - padRight;
       const plotH = h - padTop - padBottom;
 
-      // Axes & Grid lines (Light grey)
+      const currentIdx = Math.min(timelineData.length - 1, Math.max(0, Math.floor(simTime * 10)));
+      const cursorX = padLeft + (simTime / 36) * plotW;
+      const curState = timelineData[currentIdx] || timelineData[0];
+      const now = Date.now();
+      const pulse = (Math.sin(now / 150) + 1) / 2; // 0.0 to 1.0 oscillating pulse
+
+      // 1. Axes & Grid lines (Crisp Light Slate)
       ctxChart.strokeStyle = '#e2e8f0';
       ctxChart.lineWidth = 1;
       ctxChart.beginPath();
@@ -1390,19 +1412,23 @@
         ctxChart.stroke();
       }
 
-      // Track 1: Rainfall (Bright Sky Blue bars)
-      const maxRain = 120;
-      ctxChart.fillStyle = 'rgba(14, 165, 233, 0.4)';
-      for (let i = 0; i < timelineData.length; i += 2) {
-        const d = timelineData[i];
-        const x = padLeft + (d.t / 36) * plotW;
-        const barH = (d.rain / maxRain) * plotH;
-        ctxChart.fillRect(x, h - padBottom - barH, 4, barH);
+      // 2. Unobserved Future Prediction Horizon (Right of cursorX)
+      if (cursorX < w - padRight) {
+        ctxChart.fillStyle = 'rgba(248, 250, 252, 0.5)';
+        ctxChart.fillRect(cursorX, padTop, (w - padRight) - cursorX, plotH);
+
+        // Future Horizon indicator watermark
+        ctxChart.fillStyle = '#94a3b8';
+        ctxChart.font = 'bold 9px monospace';
+        ctxChart.fillText('FUTURE PREDICTION HORIZON ▶', cursorX + 10, padTop + 14);
       }
 
-      // Track 2: Astronomical Tide (Cyan line)
-      ctxChart.strokeStyle = '#06b6d4';
-      ctxChart.lineWidth = 2;
+      // 3. Faint Ghost Projections for 36h Context (Dashed, low opacity)
+      ctxChart.setLineDash([3, 4]);
+
+      // Tide Ghost
+      ctxChart.strokeStyle = 'rgba(6, 182, 212, 0.22)';
+      ctxChart.lineWidth = 1;
       ctxChart.beginPath();
       for (let i = 0; i < timelineData.length; i++) {
         const d = timelineData[i];
@@ -1412,6 +1438,41 @@
       }
       ctxChart.stroke();
 
+      // Theta Ghost
+      ctxChart.strokeStyle = 'rgba(245, 158, 11, 0.22)';
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - ((d.theta - 0.08) / 0.42) * plotH;
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Slope FS Ghost
+      ctxChart.strokeStyle = 'rgba(16, 185, 129, 0.22)';
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, Math.max(0, ((d.fs - 0.5) / 1.5) * plotH));
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Street Depth Ghost
+      ctxChart.strokeStyle = 'rgba(147, 51, 234, 0.22)';
+      ctxChart.beginPath();
+      for (let i = 0; i < timelineData.length; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, (d.streetDepth / 70) * plotH);
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+      ctxChart.setLineDash([]);
+
+      // 4. Threshold Lines
       // Outfall Invert 4.2m Lock Threshold Line (Red dashed)
       const yInvert = h - padBottom - (4.2 / 5.2) * plotH;
       ctxChart.strokeStyle = '#ef4444';
@@ -1426,58 +1487,10 @@
       ctxChart.font = 'bold 9px monospace';
       ctxChart.fillText('4.2m OUTFALL INVERT (TIDAL LOCK)', w - padRight - 220, yInvert - 3);
 
-      // Track 3: CRNS Soil Moisture theta (Vibrant Amber)
-      ctxChart.strokeStyle = '#f59e0b';
-      ctxChart.lineWidth = 2.5;
-      ctxChart.beginPath();
-      for (let i = 0; i < timelineData.length; i++) {
-        const d = timelineData[i];
-        const x = padLeft + (d.t / 36) * plotW;
-        const y = h - padBottom - ((d.theta - 0.08) / 0.42) * plotH;
-        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
-      }
-      ctxChart.stroke();
-
-      // Track 3: Slope FS (Vibrant Emerald / Red if < 1.0)
-      ctxChart.strokeStyle = '#10b981';
-      ctxChart.lineWidth = 3;
-      ctxChart.beginPath();
-      for (let i = 0; i < timelineData.length; i++) {
-        const d = timelineData[i];
-        const x = padLeft + (d.t / 36) * plotW;
-        const y = h - padBottom - Math.min(plotH, ((d.fs - 0.5) / 1.5) * plotH);
-        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
-      }
-      ctxChart.stroke();
-
-      // Track 4: Catchment Q (Royal Blue)
-      ctxChart.strokeStyle = '#2563eb';
-      ctxChart.lineWidth = 2;
-      ctxChart.beginPath();
-      for (let i = 0; i < timelineData.length; i++) {
-        const d = timelineData[i];
-        const x = padLeft + (d.t / 36) * plotW;
-        const y = h - padBottom - Math.min(plotH, (d.totalInflowQ / 140) * plotH);
-        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
-      }
-      ctxChart.stroke();
-
-      // Track 5: Street Inundation Depth (Purple)
-      ctxChart.strokeStyle = '#9333ea';
-      ctxChart.lineWidth = 2.5;
-      ctxChart.beginPath();
-      for (let i = 0; i < timelineData.length; i++) {
-        const d = timelineData[i];
-        const x = padLeft + (d.t / 36) * plotW;
-        const y = h - padBottom - Math.min(plotH, (d.streetDepth / 70) * plotH);
-        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
-      }
-      ctxChart.stroke();
-
       // Critical FS = 1.0 Line (Red Dashed)
       const yFsCrit = h - padBottom - ((1.0 - 0.5) / 1.5) * plotH;
       ctxChart.strokeStyle = '#ef4444';
-      ctxChart.lineWidth = 2;
+      ctxChart.lineWidth = 1.8;
       ctxChart.setLineDash([5, 4]);
       ctxChart.beginPath();
       ctxChart.moveTo(padLeft, yFsCrit);
@@ -1488,19 +1501,191 @@
       ctxChart.fillText('CRITICAL FS = 1.0 (SLOPE FAILURE)', w - padRight - 210, yFsCrit - 5);
       ctxChart.setLineDash([]);
 
-      // Current Time Cursor (Bright Blue Line with Circle)
-      const cursorX = padLeft + (simTime / 36) * plotW;
-      ctxChart.strokeStyle = '#1d4ed8';
+      // 5. REAL-TIME DYNAMIC STREAMING DATA (Drawn strictly up to currentIdx!)
+
+      // Track 1: Rainfall (Bright Sky Blue bars accumulating in real-time)
+      const maxRain = 120;
+      ctxChart.fillStyle = 'rgba(14, 165, 233, 0.75)';
+      for (let i = 0; i <= currentIdx; i += 2) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const barH = (d.rain / maxRain) * plotH;
+        ctxChart.fillRect(x, h - padBottom - barH, 4, barH);
+      }
+
+      // Track 2: Astronomical Tide (Vibrant Cyan line streaming up to currentIdx)
+      ctxChart.strokeStyle = '#06b6d4';
       ctxChart.lineWidth = 2.5;
+      ctxChart.beginPath();
+      for (let i = 0; i <= currentIdx; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - (d.tideHeight / 5.2) * plotH;
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 3: CRNS Soil Moisture theta (Vibrant Amber streaming up to currentIdx)
+      ctxChart.strokeStyle = '#f59e0b';
+      ctxChart.lineWidth = 2.8;
+      ctxChart.beginPath();
+      for (let i = 0; i <= currentIdx; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - ((d.theta - 0.08) / 0.42) * plotH;
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 4: Catchment Inflow Q (Royal Blue streaming up to currentIdx)
+      ctxChart.strokeStyle = '#2563eb';
+      ctxChart.lineWidth = 2.2;
+      ctxChart.beginPath();
+      for (let i = 0; i <= currentIdx; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, (d.totalInflowQ / 140) * plotH);
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 5: Street Inundation Depth (Purple with Soft Gradient Area Fill up to currentIdx)
+      if (currentIdx > 0) {
+        ctxChart.beginPath();
+        ctxChart.moveTo(padLeft, h - padBottom);
+        for (let i = 0; i <= currentIdx; i++) {
+          const d = timelineData[i];
+          const x = padLeft + (d.t / 36) * plotW;
+          const y = h - padBottom - Math.min(plotH, (d.streetDepth / 70) * plotH);
+          ctxChart.lineTo(x, y);
+        }
+        ctxChart.lineTo(cursorX, h - padBottom);
+        ctxChart.closePath();
+        const gradStreet = ctxChart.createLinearGradient(0, padTop, 0, h - padBottom);
+        gradStreet.addColorStop(0, 'rgba(147, 51, 234, 0.28)');
+        gradStreet.addColorStop(1, 'rgba(147, 51, 234, 0.02)');
+        ctxChart.fillStyle = gradStreet;
+        ctxChart.fill();
+      }
+
+      ctxChart.strokeStyle = '#9333ea';
+      ctxChart.lineWidth = 3.0;
+      ctxChart.beginPath();
+      for (let i = 0; i <= currentIdx; i++) {
+        const d = timelineData[i];
+        const x = padLeft + (d.t / 36) * plotW;
+        const y = h - padBottom - Math.min(plotH, (d.streetDepth / 70) * plotH);
+        if (i === 0) ctxChart.moveTo(x, y); else ctxChart.lineTo(x, y);
+      }
+      ctxChart.stroke();
+
+      // Track 6: Slope FS (Multi-Color Segment Drawing up to currentIdx)
+      ctxChart.lineWidth = 3.2;
+      for (let i = 0; i < currentIdx; i++) {
+        const d1 = timelineData[i];
+        const d2 = timelineData[i + 1];
+        const x1 = padLeft + (d1.t / 36) * plotW;
+        const y1 = h - padBottom - Math.min(plotH, Math.max(0, ((d1.fs - 0.5) / 1.5) * plotH));
+        const x2 = padLeft + (d2.t / 36) * plotW;
+        const y2 = h - padBottom - Math.min(plotH, Math.max(0, ((d2.fs - 0.5) / 1.5) * plotH));
+
+        ctxChart.beginPath();
+        ctxChart.moveTo(x1, y1);
+        ctxChart.lineTo(x2, y2);
+        if (d2.fs < 1.0) {
+          ctxChart.strokeStyle = '#ef4444'; // Red failure
+        } else if (d2.fs < 1.3) {
+          ctxChart.strokeStyle = '#f59e0b'; // Amber warning
+        } else {
+          ctxChart.strokeStyle = '#10b981'; // Emerald safe
+        }
+        ctxChart.stroke();
+      }
+
+      // 6. LIVE PULSING HEAD INDICATORS AT cursorX
+      const yTide = h - padBottom - (curState.tideHeight / 5.2) * plotH;
+      const yTheta = h - padBottom - ((curState.theta - 0.08) / 0.42) * plotH;
+      const yFs = h - padBottom - Math.min(plotH, Math.max(0, ((curState.fs - 0.5) / 1.5) * plotH));
+      const yQ = h - padBottom - Math.min(plotH, (curState.totalInflowQ / 140) * plotH);
+      const yStreet = h - padBottom - Math.min(plotH, (curState.streetDepth / 70) * plotH);
+
+      const activePoints = [
+        { y: yTide, color: '#06b6d4' },
+        { y: yTheta, color: '#f59e0b' },
+        { y: yFs, color: curState.fs < 1.0 ? '#ef4444' : (curState.fs < 1.3 ? '#f59e0b' : '#10b981') },
+        { y: yQ, color: '#2563eb' },
+        { y: yStreet, color: '#9333ea' }
+      ];
+
+      // Draw animated expanding ripple halo + bright bead at each curve head
+      activePoints.forEach(pt => {
+        // Outer pulsing ring
+        ctxChart.beginPath();
+        ctxChart.arc(cursorX, pt.y, 4.5 + pulse * 4, 0, Math.PI * 2);
+        ctxChart.strokeStyle = pt.color;
+        ctxChart.lineWidth = 1.5;
+        ctxChart.stroke();
+
+        // Inner solid core
+        ctxChart.beginPath();
+        ctxChart.arc(cursorX, pt.y, 3.5, 0, Math.PI * 2);
+        ctxChart.fillStyle = pt.color;
+        ctxChart.fill();
+        ctxChart.strokeStyle = '#ffffff';
+        ctxChart.lineWidth = 1.5;
+        ctxChart.stroke();
+      });
+
+      // 7. CURRENT TIME SCANNER BEAM & FLOATING PLAYHEAD BADGE
+      ctxChart.save();
+      ctxChart.strokeStyle = '#2563eb';
+      ctxChart.lineWidth = 2.5;
+      ctxChart.shadowColor = '#3b82f6';
+      ctxChart.shadowBlur = 8;
       ctxChart.beginPath();
       ctxChart.moveTo(cursorX, padTop);
       ctxChart.lineTo(cursorX, h - padBottom);
       ctxChart.stroke();
+      ctxChart.restore();
 
-      ctxChart.fillStyle = '#1d4ed8';
+      // Top playhead head tag
+      const tagText = `● LIVE ${simTime.toFixed(1)}h`;
+      ctxChart.font = 'bold 9px monospace';
+      const tagW = ctxChart.measureText(tagText).width + 12;
+      let tagX = cursorX - tagW / 2;
+      if (tagX < padLeft) tagX = padLeft;
+      if (tagX + tagW > w - padRight) tagX = w - padRight - tagW;
+
+      ctxChart.fillStyle = '#1e293b';
       ctxChart.beginPath();
-      ctxChart.arc(cursorX, padTop, 5, 0, Math.PI * 2);
+      ctxChart.roundRect(tagX, padTop - 12, tagW, 14, 4);
       ctxChart.fill();
+      ctxChart.fillStyle = '#38bdf8';
+      ctxChart.fillText(tagText, tagX + 6, padTop - 2);
+
+      // Live floating badge chips attached directly to the active curve heads
+      if (cursorX < w - padRight - 75) {
+        // Floating FS chip
+        const fsBadgeCol = curState.fs < 1.0 ? '#ef4444' : (curState.fs < 1.3 ? '#f59e0b' : '#10b981');
+        ctxChart.fillStyle = fsBadgeCol;
+        ctxChart.beginPath();
+        ctxChart.roundRect(cursorX + 6, Math.max(padTop + 4, yFs - 7), 54, 14, 3);
+        ctxChart.fill();
+        ctxChart.fillStyle = '#ffffff';
+        ctxChart.font = 'bold 9px monospace';
+        ctxChart.fillText(`FS ${curState.fs.toFixed(2)}`, cursorX + 9, Math.max(padTop + 4, yFs - 7) + 10);
+
+        // Floating Street Depth chip (if flooding > 2cm)
+        if (curState.streetDepth > 2.0) {
+          ctxChart.fillStyle = '#9333ea';
+          ctxChart.beginPath();
+          ctxChart.roundRect(cursorX + 6, Math.max(padTop + 4, yStreet - 7), 54, 14, 3);
+          ctxChart.fill();
+          ctxChart.fillStyle = '#ffffff';
+          ctxChart.font = 'bold 9px monospace';
+          ctxChart.fillText(`${curState.streetDepth.toFixed(0)}cm FLD`, cursorX + 9, Math.max(padTop + 4, yStreet - 7) + 10);
+        }
+      }
     }
 
     // =========================================================
@@ -1549,6 +1734,17 @@
       valDrainCap.innerText = `${state.activeDrainageCap.toFixed(1)} m³/s`;
       valManhole.innerText = `${state.manholeSurchargeQ.toFixed(1)} m³/s`;
       valDepth.innerText = `${state.streetDepth.toFixed(1)} cm`;
+
+      // Synchronized Chart Header Live Readouts
+      if (chartLiveRain) chartLiveRain.innerText = Math.round(state.rain);
+      if (chartLiveTide) chartLiveTide.innerText = state.tideHeight.toFixed(1);
+      if (chartLiveTheta) chartLiveTheta.innerText = (state.theta * 100).toFixed(1);
+      if (chartLiveFs) {
+        chartLiveFs.innerText = state.fs.toFixed(2);
+        chartLiveFs.className = state.fs < 1.0 ? 'font-mono text-red-600 font-black' : (state.fs < 1.3 ? 'font-mono text-amber-600 font-bold' : 'font-mono text-emerald-700 font-bold');
+      }
+      if (chartLiveQ) chartLiveQ.innerText = state.totalInflowQ.toFixed(0);
+      if (chartLiveStreet) chartLiveStreet.innerText = state.streetDepth.toFixed(0);
 
       // Arabian Sea & Tidal Lock Updates
       valTideHeight.innerText = `${state.tideHeight.toFixed(2)} m`;
