@@ -70,6 +70,9 @@
           <div class="bg-black/20 px-2.5 py-1 rounded-lg border border-white/15">
             <span class="text-blue-200">TIDE:</span> <span id="tele-tide-status" class="text-emerald-300 font-bold">2.4m OPEN</span>
           </div>
+          <div class="bg-black/20 px-2.5 py-1 rounded-lg border border-white/15">
+            <span class="text-blue-200">CRSN TVWS:</span> <span id="tele-crsn-status" class="text-emerald-300 font-bold">554 MHz CH-28</span>
+          </div>
         </div>
       </div>
 
@@ -307,6 +310,43 @@
       </div>
     </div>
 
+    <!-- CARD 4: CRSN COGNITIVE RADIO & NTN FAILOVER -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
+      <div class="flex justify-between items-center mb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-emerald-600 shadow-sm"></span>
+          <h3 class="font-bold text-xs tracking-wide text-slate-800 uppercase">CRSN Cognitive Radio Mesh</h3>
+        </div>
+        <span id="badge-crsn-status" class="text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          TVWS 554 MHz
+        </span>
+      </div>
+
+      <div class="space-y-2 font-mono text-xs text-slate-700">
+        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200 space-y-1 text-[11px]">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Cellular 4G/5G:</span>
+            <span id="val-cell-status" class="text-emerald-700 font-bold">ONLINE (Primary)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Rel-17 NTN Sat-IoT:</span>
+            <span id="val-ntn-status" class="text-slate-700 font-semibold">STANDBY (Geo-Sync)</span>
+          </div>
+          <div class="flex justify-between border-t border-slate-200 pt-1">
+            <span class="text-slate-500">CRSN TVWS Channel:</span>
+            <span id="val-crsn-channel" class="text-blue-700 font-bold">CH-28 (554 MHz)</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-0.5">
+          <button id="btn-toggle-blackout" class="w-full bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-300 hover:border-red-300 text-[10px] font-bold py-1.5 px-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+            <span id="icon-blackout">⚡</span>
+            <span id="txt-blackout">Simulate Cell Blackout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ========================================================= -->
@@ -314,7 +354,7 @@
   <!-- ========================================================= -->
   <!-- MUMBAI PI-GNN URBAN RUNTIME & TIDAL LOCK COMMAND DECK -->
   <!-- ========================================================= -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5 mb-3.5">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-3.5">
     
     <!-- CARD 1: ARABIAN SEA TIDAL LOCK & OUTFALL SLUICE SENTINEL -->
     <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-md flex flex-col justify-between">
@@ -613,6 +653,18 @@
     const valRouteEta = document.getElementById('val-route-eta');
     const valRoutePenalty = document.getElementById('val-route-penalty');
     const barRouteStatus = document.getElementById('bar-route-status');
+
+    // CRSN Cognitive Radio DOM Elements
+    const teleCrsnStatus = document.getElementById('tele-crsn-status');
+    const badgeCrsnStatus = document.getElementById('badge-crsn-status');
+    const valCellStatus = document.getElementById('val-cell-status');
+    const valNtnStatus = document.getElementById('val-ntn-status');
+    const valCrsnChannel = document.getElementById('val-crsn-channel');
+    const btnToggleBlackout = document.getElementById('btn-toggle-blackout');
+    const txtBlackout = document.getElementById('txt-blackout');
+
+    let isCellBlackout = false;
+    let crsnChannelMhz = 554.0; // TVWS Channel 28 (554 MHz)
 
     const teleFlux = document.getElementById('tele-flux');
     const logContainer = document.getElementById('log-container');
@@ -1829,6 +1881,37 @@
         simTime = 0.0;
         updateSimulation();
       });
+    });
+
+    // CRSN Blackout Simulation Handler
+    btnToggleBlackout.addEventListener('click', () => {
+      isCellBlackout = !isCellBlackout;
+      if (isCellBlackout) {
+        valCellStatus.innerText = 'OFFLINE (TOWER BLACKOUT)';
+        valCellStatus.className = 'text-red-600 font-bold animate-pulse';
+        valNtnStatus.innerText = 'CONNECTED (3GPP Sat-IoT)';
+        valNtnStatus.className = 'text-purple-700 font-bold';
+        badgeCrsnStatus.innerText = 'TVWS MESH ACTIVE';
+        badgeCrsnStatus.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pulse';
+        teleCrsnStatus.innerText = 'TVWS 554 MHz ACTIVE';
+        teleCrsnStatus.className = 'text-emerald-300 font-bold';
+        txtBlackout.innerText = 'Restore Terrestrial Cellular';
+        btnToggleBlackout.className = 'w-full bg-red-100 hover:bg-red-200 text-red-800 border border-red-400 text-[10px] font-bold py-1.5 px-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm';
+        logEvent(`[${formatSimTime(simTime)}] CRSN FAILOVER: Terrestrial 4G tower failure detected! Cognitive Radio Sensor Network hopped to TV White Space Channel 28 (554 MHz). 3GPP Rel-17 NTN Sat-IoT active. Packet Delivery: 100%.`);
+      } else {
+        valCellStatus.innerText = 'ONLINE (Primary)';
+        valCellStatus.className = 'text-emerald-700 font-bold';
+        valNtnStatus.innerText = 'STANDBY (Geo-Sync)';
+        valNtnStatus.className = 'text-slate-700 font-semibold';
+        badgeCrsnStatus.innerText = 'TVWS 554 MHz';
+        badgeCrsnStatus.className = 'text-[10px] font-mono px-2 py-0.5 rounded-lg font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+        teleCrsnStatus.innerText = '554 MHz CH-28';
+        teleCrsnStatus.className = 'text-emerald-300 font-bold';
+        txtBlackout.innerText = 'Simulate Cell Blackout';
+        btnToggleBlackout.className = 'w-full bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-700 border border-slate-300 hover:border-red-300 text-[10px] font-bold py-1.5 px-2 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm';
+        logEvent(`[${formatSimTime(simTime)}] TELEMETRY RESTORED: Primary 4G/5G terrestrial backhaul restored. CRSN mesh returned to standby monitoring.`);
+      }
+      updateSimulation();
     });
 
     // Initialization

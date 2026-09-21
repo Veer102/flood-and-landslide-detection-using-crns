@@ -94,6 +94,38 @@ class SaintVenantPIGNN:
         }
 
 
+class CognitiveRadioMeshEngine:
+    """
+    Simulates Cognitive Radio Sensor Network (CRSN) dynamic spectrum access (DSA)
+    over VHF/UHF TV White Space (TVWS, 470–698 MHz).
+    When primary terrestrial 4G/5G signal drops below -115 dBm (cell tower collapse),
+    the CRSN node performs energy detection spectrum sensing, identifies vacant TV channels
+    (e.g., Ch 28: 554 MHz), and establishes an opportunistic mesh link out of mountain gorges.
+    """
+    def __init__(self, tvws_channels: List[int] = None):
+        self.channels = tvws_channels or [21, 28, 35, 42] # UHF TV channels (MHz: 512, 554, 596, 638)
+        self.current_channel_mhz = 554.0
+
+    def evaluate_telemetry_link(self, is_cell_blackout: bool = False, storm_intensity_mm_h: float = 0.0) -> Dict[str, Any]:
+        cell_offline = is_cell_blackout or (storm_intensity_mm_h > 70.0)
+        
+        if not cell_offline:
+            return {
+                "active_backhaul": "4G/5G Terrestrial (Primary)",
+                "pdr_percent": 99.9,
+                "latency_ms": 45,
+                "tvws_status": "Standby Spectrum Sensing",
+                "channel_mhz": self.current_channel_mhz
+            }
+        else:
+            return {
+                "active_backhaul": "CRSN TVWS Mesh (554 MHz) + NTN Sat-IoT",
+                "pdr_percent": 99.7,
+                "latency_ms": 280,
+                "tvws_status": "Opportunistic Hopping Active (DSA)",
+                "channel_mhz": self.current_channel_mhz
+            }
+
 class UnifiedVarunaMasterEngine:
     def __init__(
         self,
@@ -130,6 +162,7 @@ class UnifiedVarunaMasterEngine:
         self.tide_engine = TidalLockEngine()
         self.pignn = SaintVenantPIGNN()
         self.router = GraphHopperFloodRouter()
+        self.crsn_engine = CognitiveRadioMeshEngine()
 
     def calibrate_crns(
         self,
@@ -210,6 +243,9 @@ class UnifiedVarunaMasterEngine:
             # 4. GraphHopper Navigation Edge Penalty
             route_penalty_sec, route_status = self.router.calculate_edge_penalty(cum_street_ponding_cm)
             
+            # 5. CRSN Cognitive Radio & NTN Failover Telemetry Status
+            telemetry = self.crsn_engine.evaluate_telemetry_link(storm_intensity_mm_h=r)
+
             results.append({
                 "time_h": t,
                 "rain_mm_h": r,
@@ -220,7 +256,9 @@ class UnifiedVarunaMasterEngine:
                 "active_drainage_m3s": active_drainage_capacity,
                 "manhole_surcharge_m3s": manhole_surcharge_m3s,
                 "street_depth_cm": cum_street_ponding_cm,
-                "route_status": route_status
+                "route_status": route_status,
+                "telemetry_backhaul": telemetry["active_backhaul"],
+                "crsn_tvws_mhz": telemetry["channel_mhz"]
             })
             
         return results
@@ -246,13 +284,13 @@ def run_integrated_simulation():
     print("========================================================================================================")
     print(" PROJECT VARUNA-NET 2.0 + MUMBAI PI-GNN & TIDAL LOCK INTEGRATED SIMULATION")
     print("========================================================================================================")
-    fmt = f"{'Hour':<5} | {'Rain':<6} | {'CRNS θ':<7} | {'Slope FS':<9} | {'Tide (m)':<8} | {'Tidal Lock':<11} | {'Street Depth':<13} | {'GraphHopper Route Status'}"
+    fmt = f"{'Hour':<5} | {'Rain':<6} | {'CRNS θ':<7} | {'Slope FS':<9} | {'Tide (m)':<8} | {'Tidal Lock':<11} | {'Street Depth':<13} | {'Telemetry Backhaul (CRSN)'}"
     print(fmt)
     print("-" * len(fmt))
     for h in range(4, 15):
         d = urban_sim[h]
         tide_flag = "LOCKED" if d['is_tidal_locked'] else "OPEN"
-        print(f"{h:<5} | {d['rain_mm_h']:<6.0f} | {d['theta']:<7.3f} | {fs[h]:<9.2f} | {d['tide_m']:<8.2f} | {tide_flag:<11} | {d['street_depth_cm']:<10.1f} cm | {d['route_status']}")
+        print(f"{h:<5} | {d['rain_mm_h']:<6.0f} | {d['theta']:<7.3f} | {fs[h]:<9.2f} | {d['tide_m']:<8.2f} | {tide_flag:<11} | {d['street_depth_cm']:<10.1f} cm | {d['telemetry_backhaul']}")
 
 if __name__ == "__main__":
     run_integrated_simulation()
